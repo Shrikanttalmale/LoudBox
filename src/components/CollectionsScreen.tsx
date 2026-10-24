@@ -191,11 +191,11 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
         <div>
           <button
             onClick={openReportWithCurrentTab}
-            title="Open Collection Statement & Export"
+            title={t(appLanguage, 'statement_title')}
             className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-1.5 shadow-sm transition cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>Statement</span>
+            <span>{t(appLanguage, 'statement_btn')}</span>
           </button>
         </div>
       </div>
@@ -206,7 +206,7 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
           { id: 'Daily', label: t(appLanguage, 'filter_daily') },
           { id: 'Weekly', label: t(appLanguage, 'filter_weekly') },
           { id: 'Monthly', label: t(appLanguage, 'filter_monthly') },
-          { id: 'Yearly', label: 'Yearly' },
+          { id: 'Yearly', label: t(appLanguage, 'filter_yearly') },
           { id: 'Custom', label: t(appLanguage, 'filter_till_date') },
         ].map((tab) => (
           <button
@@ -229,16 +229,16 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
           <div className="flex items-center justify-between text-xs text-purple-300 font-semibold">
             <span className="flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5" />
-              Custom Date Range Filter
+              {t(appLanguage, 'filter_custom')}
             </span>
             <span className="text-[10px] text-slate-400">
-              {filteredTransactions.length} records found
+              {filteredTransactions.length} {t(appLanguage, 'records_count')}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
-              <label className="text-[10px] text-slate-400 block mb-0.5">From Date</label>
+              <label className="text-[10px] text-slate-400 block mb-0.5">{t(appLanguage, 'start_date')}</label>
               <input
                 type="date"
                 value={customStartDate}
@@ -248,7 +248,7 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
               />
             </div>
             <div>
-              <label className="text-[10px] text-slate-400 block mb-0.5">To Date</label>
+              <label className="text-[10px] text-slate-400 block mb-0.5">{t(appLanguage, 'end_date')}</label>
               <input
                 type="date"
                 value={customEndDate}
@@ -273,8 +273,8 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
               : activeTab === 'Monthly'
               ? t(appLanguage, 'collection_30d')
               : activeTab === 'Yearly'
-              ? 'Yearly Collections'
-              : 'Custom Period Collections'}
+              ? t(appLanguage, 'collection_yearly')
+              : t(appLanguage, 'collection_custom')}
           </span>
           <span className="text-[11px] font-mono text-purple-300 bg-purple-900/40 px-2 py-0.5 rounded-full border border-purple-700/40">
             {activeTab === 'Daily'
@@ -294,10 +294,10 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
             <span 
               onClick={() => setShowUnverifiedNotice(!showUnverifiedNotice)}
               className="text-xs text-amber-300 font-bold bg-amber-500/15 px-2.5 py-1 rounded-full flex items-center gap-1.5 border border-amber-500/30 cursor-pointer hover:bg-amber-500/25 transition"
-              title="Click to learn about unverified notification-derived totals"
+              title={t(appLanguage, 'why_unverified_title')}
             >
               <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-              <span>Unverified (Notification-derived)</span>
+              <span>{t(appLanguage, 'unverified_badge')}</span>
               <Info className="w-3 h-3 text-amber-400/80" />
             </span>
           </div>
@@ -306,11 +306,9 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
         {/* Collapsible Info Note on Unverified Totals */}
         {showUnverifiedNotice && (
           <div className="mt-2.5 p-2.5 rounded-xl bg-amber-950/40 border border-amber-600/30 text-[11px] text-amber-200 leading-relaxed animate-in fade-in">
-            <strong>⚠️ Why are totals labeled Unverified?</strong>
+            <strong>⚠️ {t(appLanguage, 'why_unverified_title')}</strong>
             <p className="mt-0.5 text-slate-300">
-              Soundbox detects payment alerts from device notifications (GPay, PhonePe, Paytm, BHIM, Amazon Pay).
-              While accurate for immediate store voice chimes, these totals have not been cross-verified with bank gateway settlement.
-              Always reconcile with your official bank statement before filing taxes or financial accounts.
+              {t(appLanguage, 'why_unverified_desc')}
             </p>
           </div>
         )}
@@ -326,7 +324,7 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
           className="w-full mt-3 py-2 px-3 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/40 text-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition cursor-pointer"
         >
           <FileText className="w-3.5 h-3.5 text-purple-300" />
-          <span>Generate Statement & Share (PDF, CSV, Android Share Sheet)</span>
+          <span>{t(appLanguage, 'generate_statement_banner')}</span>
           <ChevronRight className="w-3.5 h-3.5 text-purple-400" />
         </button>
       </div>
@@ -417,7 +415,7 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between text-xs text-slate-400 font-semibold px-1">
           <span>{t(appLanguage, 'tab_collections')} ({filteredTransactions.length})</span>
-          <span className="text-[10px] text-amber-400 font-medium">⚠️ Notification-Derived (Unverified)</span>
+          <span className="text-[10px] text-amber-400 font-medium">⚠️ {t(appLanguage, 'unverified_notification_tag')}</span>
         </div>
 
         {filteredTransactions.length === 0 ? (

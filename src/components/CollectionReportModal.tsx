@@ -111,15 +111,15 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
         title: `${merchant.businessName} - ${summary.periodLabel}`,
         text: textSummary,
         file,
-        dialogTitle: 'Share Statement',
+        dialogTitle: t(appLanguage, 'share_statement_btn'),
       });
 
       if (result.method === 'clipboard') {
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
-        showToast('Text copied to clipboard');
+        showToast(t(appLanguage, 'toast_clipboard'));
       } else if (result.success) {
-        showToast('Statement shared');
+        showToast(t(appLanguage, 'toast_statement_shared'));
       }
     } catch (err) {
       console.error('Share error:', err);
@@ -132,7 +132,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
   const handleWhatsAppShare = () => {
     const textSummary = generateQuickTextSummary(summary, merchant, includeSenderNames);
     openWhatsAppShare(textSummary);
-    showToast('Opening WhatsApp');
+    showToast(t(appLanguage, 'toast_opening_whatsapp'));
   };
 
   const handleDownloadPdf = () => {
@@ -140,7 +140,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
     try {
       const { blob, filename } = generatePDFReport(summary, merchant, includeSenderNames);
       triggerFileDownload(blob, filename);
-      showToast('PDF downloaded');
+      showToast(t(appLanguage, 'toast_pdf_downloaded'));
     } catch (err) {
       console.error('PDF error:', err);
       showToast('Error generating PDF');
@@ -155,7 +155,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
     const cleanDateStr = new Date().toISOString().split('T')[0];
     const filename = `Statement-${summary.periodLabel.split(' ')[0]}-${cleanDateStr}.csv`;
     triggerFileDownload(blob, filename);
-    showToast('CSV downloaded');
+    showToast(t(appLanguage, 'toast_csv_downloaded'));
   };
 
   const handleCopyText = async () => {
@@ -163,19 +163,19 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
     try {
       await navigator.clipboard.writeText(textSummary);
       setCopySuccess(true);
-      showToast('Summary copied');
+      showToast(t(appLanguage, 'toast_copied'));
       setTimeout(() => setCopySuccess(false), 2500);
     } catch {
       showToast('Failed to copy');
     }
   };
 
-  const timeTabs: { id: ReportTimeframe; label: string }[] = [
-    { id: 'daily', label: 'Daily' },
-    { id: 'weekly', label: 'Weekly' },
-    { id: 'monthly', label: 'Monthly' },
-    { id: 'yearly', label: 'Yearly' },
-    { id: 'custom', label: 'Custom' },
+  const timeTabs: { id: ReportTimeframe; labelKey: 'filter_daily' | 'filter_weekly' | 'filter_monthly' | 'filter_yearly' | 'filter_custom' }[] = [
+    { id: 'daily', labelKey: 'filter_daily' },
+    { id: 'weekly', labelKey: 'filter_weekly' },
+    { id: 'monthly', labelKey: 'filter_monthly' },
+    { id: 'yearly', labelKey: 'filter_yearly' },
+    { id: 'custom', labelKey: 'filter_custom' },
   ];
 
   return (
@@ -191,7 +191,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
         <div className="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between shrink-0">
           <div>
             <h3 className="font-semibold text-base text-white tracking-tight">
-              Collection Statement
+              {t(appLanguage, 'statement_title')}
             </h3>
             <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
               <span>{merchant.businessName}</span>
@@ -223,13 +223,13 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
           {/* PERIOD SELECTOR */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between text-xs font-medium text-slate-400 px-0.5">
-              <span>Report Period</span>
+              <span>{t(appLanguage, 'report_period')}</span>
               {timeframe === 'daily' && (
                 <button
                   onClick={() => setIsSpecificDailyDate(!isSpecificDailyDate)}
                   className="text-indigo-400 hover:text-indigo-300 transition text-[11px] cursor-pointer"
                 >
-                  {isSpecificDailyDate ? 'Reset to Today' : 'Change date'}
+                  {isSpecificDailyDate ? t(appLanguage, 'reset_to_today') : t(appLanguage, 'change_date')}
                 </button>
               )}
             </div>
@@ -250,7 +250,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    {tab.label}
+                    {t(appLanguage, tab.labelKey)}
                   </button>
                 );
               })}
@@ -261,7 +261,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
               <div className="flex items-center justify-between p-2 rounded-xl bg-slate-950/70 border border-slate-800 text-xs mt-1">
                 <span className="text-slate-400 flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-indigo-400" />
-                  Select Date
+                  {t(appLanguage, 'select_date')}
                 </span>
                 <input
                   type="date"
@@ -278,7 +278,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
               <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col gap-2 mt-1">
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-[11px] text-slate-400 block mb-1">Start Date</span>
+                    <span className="text-[11px] text-slate-400 block mb-1">{t(appLanguage, 'start_date')}</span>
                     <input
                       type="date"
                       value={customStartDate}
@@ -288,7 +288,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                     />
                   </div>
                   <div>
-                    <span className="text-[11px] text-slate-400 block mb-1">End Date</span>
+                    <span className="text-[11px] text-slate-400 block mb-1">{t(appLanguage, 'end_date')}</span>
                     <input
                       type="date"
                       value={customEndDate}
@@ -301,7 +301,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 pt-1 border-t border-slate-800/80 text-[11px] text-slate-400">
-                  <span>Presets:</span>
+                  <span>{t(appLanguage, 'presets')}</span>
                   <button
                     onClick={() => {
                       const now = Date.now();
@@ -310,7 +310,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                     }}
                     className="hover:text-white transition cursor-pointer"
                   >
-                    7 Days
+                    {t(appLanguage, 'preset_7d')}
                   </button>
                   <span aria-hidden="true">·</span>
                   <button
@@ -321,7 +321,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                     }}
                     className="hover:text-white transition cursor-pointer"
                   >
-                    30 Days
+                    {t(appLanguage, 'preset_30d')}
                   </button>
                   <span aria-hidden="true">·</span>
                   <button
@@ -332,7 +332,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                     }}
                     className="hover:text-white transition cursor-pointer"
                   >
-                    This Month
+                    {t(appLanguage, 'preset_month')}
                   </button>
                 </div>
               </div>
@@ -343,28 +343,28 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
           <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3">
             <div className="flex items-start justify-between">
               <div>
-                <span className="text-xs text-slate-400 font-medium">Total Collections</span>
+                <span className="text-xs text-slate-400 font-medium">{t(appLanguage, 'total_collections')}</span>
                 <div className="text-2xl sm:text-3xl font-extrabold font-mono tabular-nums text-white mt-0.5 tracking-tight">
                   ₹{summary.totalAmount.toLocaleString('en-IN')}
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-xs text-slate-400 font-medium">Volume</span>
+                <span className="text-xs text-slate-400 font-medium">{t(appLanguage, 'volume_label')}</span>
                 <div className="text-sm font-semibold text-slate-200 mt-0.5 font-mono tabular-nums">
-                  {summary.totalCount} {summary.totalCount === 1 ? 'payment' : 'payments'}
+                  {summary.totalCount} {summary.totalCount === 1 ? t(appLanguage, 'payment_singular') : t(appLanguage, 'payments_plural')}
                 </div>
               </div>
             </div>
 
             <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800/80">
               <span className="flex items-center gap-1">
-                Average ticket:
+                {t(appLanguage, 'avg_ticket_label')}
                 <strong className="text-slate-200 font-mono font-medium">
                   ₹{summary.averageAmount.toLocaleString('en-IN')}
                 </strong>
               </span>
               <span className="text-[11px] text-slate-500 font-mono">
-                {summary.transactions.length > 0 ? 'Device alert totals' : 'No records'}
+                {summary.transactions.length > 0 ? t(appLanguage, 'device_alert_totals') : t(appLanguage, 'no_records')}
               </span>
             </div>
 
@@ -428,10 +428,10 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
               )}
               <div className="min-w-0">
                 <span className="text-xs font-medium text-slate-200 block truncate">
-                  Customer Names in Statement
+                  {t(appLanguage, 'customer_names_statement')}
                 </span>
                 <span className="text-[11px] text-slate-500 block truncate">
-                  {includeSenderNames ? 'Names visible in export' : 'Masked for privacy (e.g. R*** S***)'}
+                  {includeSenderNames ? t(appLanguage, 'names_visible') : t(appLanguage, 'names_masked')}
                 </span>
               </div>
             </div>
@@ -465,7 +465,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                       : 'border-transparent text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Transactions ({summary.transactions.length})
+                  {t(appLanguage, 'tab_tx_list')} ({summary.transactions.length})
                 </button>
                 <button
                   onClick={() => setActiveTab('breakdown')}
@@ -475,7 +475,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                       : 'border-transparent text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Breakdown & Verification
+                  {t(appLanguage, 'tab_breakdown')}
                 </button>
               </div>
             </div>
@@ -485,10 +485,10 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
               <div className="max-h-56 overflow-y-auto space-y-1 rounded-xl bg-slate-950/60 border border-slate-800 p-2">
                 {summary.transactions.length === 0 ? (
                   <div className="py-8 text-center text-xs text-slate-500">
-                    No transactions recorded for this period.
+                    {t(appLanguage, 'no_tx_period')}
                   </div>
                 ) : (
-                  summary.transactions.map((tx, idx) => {
+                  summary.transactions.map((tx) => {
                     const customerDisplay = formatCustomerName(tx.customerName, includeSenderNames);
                     return (
                       <div
@@ -534,7 +534,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                 {/* Apps list */}
                 <div className="space-y-1.5">
                   <span className="text-[11px] text-slate-400 font-medium block">
-                    Distribution by UPI App
+                    {t(appLanguage, 'dist_by_app')}
                   </span>
                   {Object.entries(summary.appBreakdown).map(([appId, data]) => {
                     const cfg = (UPI_APPS_CONFIG as Record<string, any>)[appId];
@@ -549,7 +549,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                             ₹{data.total.toLocaleString('en-IN')}
                           </span>
                           <span className="text-slate-500 text-[11px] ml-2">
-                            ({data.count} bills · {data.percentage}%)
+                            ({data.count} {t(appLanguage, 'bills_count')} · {data.percentage}%)
                           </span>
                         </div>
                       </div>
@@ -562,13 +562,13 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
                   <Info className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                   <div>
                     <span className="text-slate-300 font-medium block mb-0.5">
-                      Notification-Derived Statement Notice
+                      {t(appLanguage, 'unverified_notice_title')}
                     </span>
-                    These totals are compiled from device notification alerts. Please reconcile with your official bank passbook for accounting or tax purposes.
+                    {t(appLanguage, 'unverified_notice_body')}
                     <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono mt-1">
-                      <span>Device alerts: ₹{summary.notificationDerivedTotal.toLocaleString('en-IN')}</span>
+                      <span>{t(appLanguage, 'device_alerts_prefix')} ₹{summary.notificationDerivedTotal.toLocaleString('en-IN')}</span>
                       <span aria-hidden="true">·</span>
-                      <span>Bank settled: ₹{summary.verifiedBankTotal.toLocaleString('en-IN')}</span>
+                      <span>{t(appLanguage, 'bank_settled_prefix')} ₹{summary.verifiedBankTotal.toLocaleString('en-IN')}</span>
                     </div>
                   </div>
                 </div>
@@ -586,7 +586,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
             className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.99] cursor-pointer"
           >
             <Share2 className="w-4 h-4 text-white" />
-            <span>{isExportingPdf ? 'Preparing statement...' : 'Share Statement'}</span>
+            <span>{isExportingPdf ? t(appLanguage, 'preparing_statement') : t(appLanguage, 'share_statement_btn')}</span>
           </button>
 
           {/* SECONDARY ROW: UNIFIED ACTION GROUP */}
@@ -598,7 +598,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
               title="Download PDF statement"
             >
               <FileText className="w-3.5 h-3.5 text-slate-400" />
-              <span>PDF</span>
+              <span>{t(appLanguage, 'export_pdf')}</span>
             </button>
 
             <button
@@ -607,7 +607,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
               title="Download CSV spreadsheet"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-slate-400" />
-              <span>CSV</span>
+              <span>{t(appLanguage, 'export_csv')}</span>
             </button>
 
             <button
@@ -616,7 +616,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
               title="Share summary to WhatsApp"
             >
               <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-              <span>WhatsApp</span>
+              <span>{t(appLanguage, 'share_whatsapp')}</span>
             </button>
 
             <button
@@ -629,7 +629,7 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
               ) : (
                 <Copy className="w-3.5 h-3.5 text-slate-400" />
               )}
-              <span>{copySuccess ? 'Copied' : 'Copy'}</span>
+              <span>{copySuccess ? t(appLanguage, 'copied_badge') : t(appLanguage, 'copy_summary_btn')}</span>
             </button>
           </div>
         </div>

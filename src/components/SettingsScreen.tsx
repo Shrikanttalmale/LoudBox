@@ -1365,7 +1365,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                         {parsedResult.isValidPayment ? (
                           <>
                             <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                            <span>Valid Incoming Payment</span>
+                            <span>{t(appLanguage, 'valid_incoming_payment')}</span>
                           </>
                         ) : (
                           <>
@@ -1384,13 +1384,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                       <div className="space-y-1.5 text-[11px]">
                         <div className="grid grid-cols-2 gap-2 bg-slate-900/70 p-2 rounded-lg border border-slate-800">
                           <div>
-                            <span className="text-[10px] text-slate-400 block">Extracted Amount:</span>
+                            <span className="text-[10px] text-slate-400 block">{t(appLanguage, 'extracted_amount')}</span>
                             <span className="font-bold font-mono text-emerald-400 text-sm">
                               ₹{parsedResult.amount?.toLocaleString('en-IN')}
                             </span>
                           </div>
                           <div>
-                            <span className="text-[10px] text-slate-400 block">Extracted Sender:</span>
+                            <span className="text-[10px] text-slate-400 block">{t(appLanguage, 'extracted_sender')}</span>
                             <span className="font-bold text-white text-xs">
                               {parsedResult.senderName ? (
                                 <span className="text-purple-300 flex items-center gap-1">
@@ -1421,7 +1421,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                       </div>
                     ) : (
                       <div className="text-[11px] text-rose-200 bg-slate-900/60 p-2.5 rounded-lg border border-rose-900/40">
-                        <span className="font-bold text-rose-400 block text-xs">False Alert Protection Triggered:</span>
+                        <span className="font-bold text-rose-400 block text-xs">{t(appLanguage, 'false_alert_protection')}</span>
                         <p className="text-slate-300 text-[10px] mt-0.5 leading-relaxed">
                           {parsedResult.explanation}
                         </p>
@@ -1446,7 +1446,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                           className="flex-1 py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shadow-md"
                         >
                           <Play className="w-3.5 h-3.5 fill-white" />
-                          <span>Announce Aloud via TTS</span>
+                          <span>{t(appLanguage, 'announce_tts_btn')}</span>
                         </button>
                       ) : (
                         <div className="flex-1 py-1.5 text-center text-[10px] text-slate-400 italic">

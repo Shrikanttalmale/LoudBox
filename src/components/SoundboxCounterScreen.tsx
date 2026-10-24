@@ -222,7 +222,7 @@ export const SoundboxCounterScreen: React.FC<SoundboxCounterScreenProps> = ({
             <div className="flex items-center gap-1.5">
               <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">{t(appLanguage, 'todays_collection')}</span>
               <span className="text-[9px] bg-amber-500/15 text-amber-300 font-bold px-1.5 py-0.2 rounded border border-amber-500/30">
-                Unverified Alert
+                {t(appLanguage, 'unverified_alert_tag')}
               </span>
             </div>
             <div className="text-2xl font-black text-emerald-400 font-mono tracking-tight mt-0.5">
