@@ -232,6 +232,7 @@ export interface AudioSettings {
   voiceMode?: 'auto' | 'native' | 'phonetic';
   preferredVoiceUri?: string;
   voicePersonaId?: string; // Celebrity/Singer voice persona id, e.g. 'mr_ashok_saraf', 'hi_amitabh', 'ta_rajini'
+  announceSenderName?: boolean; // ON/OFF setting for sender/payer name announcements
 }
 
 export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
@@ -243,7 +244,9 @@ export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
   repeatAlert: false,
   voiceMode: 'auto',
   voicePersonaId: undefined, // Normal standard soundbox voice
+  announceSenderName: true, // Default to ON for announcing payer name
 };
+
 
 // Web Audio Context Singleton
 let audioCtx: AudioContext | null = null;
@@ -1053,6 +1056,14 @@ export function buildSpokenText(
   senderName?: string,
   forHindiVoiceFallback = false
 ): string {
+  const cleanSender =
+    senderName &&
+    senderName.trim().length > 0 &&
+    senderName.trim().toLowerCase() !== 'customer' &&
+    senderName.trim().toLowerCase() !== 'unknown'
+      ? senderName.trim()
+      : undefined;
+
   switch (langCode) {
     case 'mr': {
       // Authentic Marathi Soundbox announcements
@@ -1067,10 +1078,10 @@ export function buildSpokenText(
       };
       const app = marathiApps[appId] || 'यूपीआय वर';
       const words = formatMarathiAmount(amount);
-
-      // In Hindi TTS engines, the Marathi consonant 'ळ' causes stuttering or dropped words.
-      // If we are using a Hindi voice fallback, replacing with 'ल' preserves 100% natural Indian pronunciation.
       const ending = forHindiVoiceFallback ? 'रुपये मिलाले' : 'रुपये मिळाले';
+      if (cleanSender) {
+        return `${app} ${cleanSender} कडून ${words} ${ending}`;
+      }
       return `${app} ${words} ${ending}`;
     }
 
@@ -1087,6 +1098,9 @@ export function buildSpokenText(
       };
       const app = hindiApps[appId] || 'यूपीआई पर';
       const words = formatHindiAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} से ${words} रुपये प्राप्त हुए`;
+      }
       return `${app} ${words} रुपये प्राप्त हुए`;
     }
 
@@ -1101,6 +1115,9 @@ export function buildSpokenText(
         mobikwik: 'MobiKwik',
       };
       const app = engApps[appId] || 'UPI';
+      if (cleanSender) {
+        return `${app} par ${cleanSender} se ${amount} rupees receive hue`;
+      }
       return `${app} par ${amount} rupees receive hue`;
     }
 
@@ -1117,6 +1134,9 @@ export function buildSpokenText(
       };
       const app = gujApps[appId] || 'યુપીઆઈ પર';
       const words = formatGujaratiAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} તરફથી ${words} રૂપિયા મળ્યા`;
+      }
       return `${app} ${words} રૂપિયા મળ્યા`;
     }
 
@@ -1133,6 +1153,9 @@ export function buildSpokenText(
       };
       const app = punjApps[appId] || 'ਯੂਪੀਆਈ ਤੇ';
       const words = formatPunjabiAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} ਵੱਲੋਂ ${words} ਰੁਪਏ ਪ੍ਰਾਪਤ ਹੋਏ`;
+      }
       return `${app} ${words} ਰੁਪਏ ਪ੍ਰਾਪਤ ਹੋਏ`;
     }
 
@@ -1149,6 +1172,9 @@ export function buildSpokenText(
       };
       const app = bengApps[appId] || 'ইউপিআই তে';
       const words = formatBengaliAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} এর থেকে ${words} টাকা পাওয়া গেছে`;
+      }
       return `${app} ${words} টাকা পাওয়া গেছে`;
     }
 
@@ -1165,6 +1191,9 @@ export function buildSpokenText(
       };
       const app = tamApps[appId] || 'யூபிஐ மூலம்';
       const words = formatTamilAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} விடம் இருந்து ${words} ரூபாய் பெறப்பட்டது`;
+      }
       return `${app} ${words} ரூபாய் பெறப்பட்டது`;
     }
 
@@ -1181,6 +1210,9 @@ export function buildSpokenText(
       };
       const app = telApps[appId] || 'యూపీఐ లో';
       const words = formatTeluguAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} నుండి ${words} రూపాయలు అందాయి`;
+      }
       return `${app} ${words} రూపాయలు అందాయి`;
     }
 
@@ -1197,6 +1229,9 @@ export function buildSpokenText(
       };
       const app = kanApps[appId] || 'ಯುಪಿಐ ನಲ್ಲಿ';
       const words = formatKannadaAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} ಅವರಿಂದ ${words} ರೂಪಾಯಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ`;
+      }
       return `${app} ${words} ರೂಪಾಯಿ ಸ್ವೀಕರಿಸಲಾಗಿದೆ`;
     }
 
@@ -1213,6 +1248,9 @@ export function buildSpokenText(
       };
       const app = mlApps[appId] || 'യുപിഐ വഴി';
       const words = formatMalayalamAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} ൽ നിന്ന് ${words} രൂപ ലഭിച്ചു`;
+      }
       return `${app} ${words} രൂപ ലഭിച്ചു`;
     }
 
@@ -1229,6 +1267,9 @@ export function buildSpokenText(
       };
       const app = orApps[appId] || 'ୟୁପିଆଇ ରେ';
       const words = formatOdiaAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} ଙ୍କ ଠାରୁ ${words} ଟଙ୍କା ମିଳିଲା`;
+      }
       return `${app} ${words} ଟଙ୍କା ମିଳିଲା`;
     }
 
@@ -1245,6 +1286,9 @@ export function buildSpokenText(
       };
       const app = asApps[appId] || 'ইউপিআই ত';
       const words = formatAssameseAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} ৰ পৰা ${words} টকা লাভ হ'ল`;
+      }
       return `${app} ${words} টকা লাভ হ'ল`;
     }
 
@@ -1261,6 +1305,9 @@ export function buildSpokenText(
       };
       const app = bhoApps[appId] || 'यूपीआई पर';
       const words = formatBhojpuriAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} से ${words} रुपया मिलल`;
+      }
       return `${app} ${words} रुपया मिलल`;
     }
 
@@ -1277,6 +1324,9 @@ export function buildSpokenText(
       };
       const app = rajApps[appId] || 'यूपीआई माथे';
       const words = formatRajasthaniAmount(amount);
+      if (cleanSender) {
+        return `${app} ${cleanSender} सू ${words} रुपया मिल्या`;
+      }
       return `${app} ${words} रुपया मिल्या`;
     }
 
@@ -1292,6 +1342,9 @@ export function buildSpokenText(
         mobikwik: 'MobiKwik',
       };
       const app = engApps[appId] || 'UPI';
+      if (cleanSender) {
+        return `Rupees ${amount} received on ${app} from ${cleanSender}`;
+      }
       return `Rupees ${amount} received on ${app}`;
     }
   }
@@ -1304,7 +1357,8 @@ export function buildSpokenText(
 export function buildPhoneticSpokenText(
   amount: number,
   appId: UpiAppId,
-  langCode: LanguageCode
+  langCode: LanguageCode,
+  senderName?: string
 ): string {
   const engApps: Record<UpiAppId, string> = {
     gpay: 'Google Pay',
@@ -1316,55 +1370,93 @@ export function buildPhoneticSpokenText(
     mobikwik: 'MobiKwik',
   };
   const app = engApps[appId] || 'UPI';
+  const cleanSender =
+    senderName &&
+    senderName.trim().length > 0 &&
+    senderName.trim().toLowerCase() !== 'customer' &&
+    senderName.trim().toLowerCase() !== 'unknown'
+      ? senderName.trim()
+      : undefined;
 
   switch (langCode) {
     case 'mr':
-      return `${app} var ${formatMarathiPhoneticAmount(amount)} rupaye milale`;
+      return cleanSender
+        ? `${app} var ${cleanSender} kadun ${formatMarathiPhoneticAmount(amount)} rupaye milale`
+        : `${app} var ${formatMarathiPhoneticAmount(amount)} rupaye milale`;
 
     case 'hi':
-      return `${app} par ${formatHindiPhoneticAmount(amount)} rupaye prapt hue`;
+      return cleanSender
+        ? `${app} par ${cleanSender} se ${formatHindiPhoneticAmount(amount)} rupaye prapt hue`
+        : `${app} par ${formatHindiPhoneticAmount(amount)} rupaye prapt hue`;
 
     case 'hinglish':
-      return `${app} par ${amount} rupees receive hue`;
+      return cleanSender
+        ? `${app} par ${cleanSender} se ${amount} rupees receive hue`
+        : `${app} par ${amount} rupees receive hue`;
 
     case 'gu':
-      return `${app} par ${formatGujaratiPhoneticAmount(amount)} rupiya malya`;
+      return cleanSender
+        ? `${app} par ${cleanSender} taraf thi ${formatGujaratiPhoneticAmount(amount)} rupiya malya`
+        : `${app} par ${formatGujaratiPhoneticAmount(amount)} rupiya malya`;
 
     case 'pa':
-      return `${app} te ${formatPunjabiPhoneticAmount(amount)} rupaye prapat hoye`;
+      return cleanSender
+        ? `${app} te ${cleanSender} vallon ${formatPunjabiPhoneticAmount(amount)} rupaye prapat hoye`
+        : `${app} te ${formatPunjabiPhoneticAmount(amount)} rupaye prapat hoye`;
 
     case 'bn':
-      return `${app} e ${formatBengaliPhoneticAmount(amount)} taka paowa gechhe`;
+      return cleanSender
+        ? `${app} e ${cleanSender} er theke ${formatBengaliPhoneticAmount(amount)} taka paowa gechhe`
+        : `${app} e ${formatBengaliPhoneticAmount(amount)} taka paowa gechhe`;
 
     case 'ta':
-      return `${app} moolam ${formatTamilPhoneticAmount(amount)} roobai perappattadhu`;
+      return cleanSender
+        ? `${app} moolam ${cleanSender} idam irundhu ${formatTamilPhoneticAmount(amount)} roobai perappattadhu`
+        : `${app} moolam ${formatTamilPhoneticAmount(amount)} roobai perappattadhu`;
 
     case 'te':
-      return `${app} lo ${formatTeluguPhoneticAmount(amount)} roopayalu andaayi`;
+      return cleanSender
+        ? `${app} lo ${cleanSender} nundi ${formatTeluguPhoneticAmount(amount)} roopayalu andaayi`
+        : `${app} lo ${formatTeluguPhoneticAmount(amount)} roopayalu andaayi`;
 
     case 'kn':
-      return `${app} nalli ${formatKannadaPhoneticAmount(amount)} roopayi sweekarisalagide`;
+      return cleanSender
+        ? `${app} nalli ${cleanSender} avarinda ${formatKannadaPhoneticAmount(amount)} roopayi sweekarisalagide`
+        : `${app} nalli ${formatKannadaPhoneticAmount(amount)} roopayi sweekarisalagide`;
 
     case 'ml':
-      return `${app} vazhi ${formatMalayalamPhoneticAmount(amount)} roopa labhichu`;
+      return cleanSender
+        ? `${app} vazhi ${cleanSender} il ninnu ${formatMalayalamPhoneticAmount(amount)} roopa labhichu`
+        : `${app} vazhi ${formatMalayalamPhoneticAmount(amount)} roopa labhichu`;
 
     case 'or':
-      return `${app} re ${formatOdiaPhoneticAmount(amount)} tanka milila`;
+      return cleanSender
+        ? `${app} re ${cleanSender} nka tharu ${formatOdiaPhoneticAmount(amount)} tanka milila`
+        : `${app} re ${formatOdiaPhoneticAmount(amount)} tanka milila`;
 
     case 'as':
-      return `${app} t ${formatAssamesePhoneticAmount(amount)} toka laabh hol`;
+      return cleanSender
+        ? `${app} t ${cleanSender} r pora ${formatAssamesePhoneticAmount(amount)} toka laabh hol`
+        : `${app} t ${formatAssamesePhoneticAmount(amount)} toka laabh hol`;
 
     case 'bho':
-      return `${app} par ${formatBhojpuriPhoneticAmount(amount)} rupaya milal`;
+      return cleanSender
+        ? `${app} par ${cleanSender} se ${formatBhojpuriPhoneticAmount(amount)} rupaya milal`
+        : `${app} par ${formatBhojpuriPhoneticAmount(amount)} rupaya milal`;
 
     case 'raj':
-      return `${app} mathe ${formatRajasthaniPhoneticAmount(amount)} rupya milya`;
+      return cleanSender
+        ? `${app} mathe ${cleanSender} su ${formatRajasthaniPhoneticAmount(amount)} rupya milya`
+        : `${app} mathe ${formatRajasthaniPhoneticAmount(amount)} rupya milya`;
 
     case 'en':
     default:
-      return `Rupees ${amount} received on ${app}`;
+      return cleanSender
+        ? `Rupees ${amount} received on ${app} from ${cleanSender}`
+        : `Rupees ${amount} received on ${app}`;
   }
 }
+
 
 /* =======================================================================
    INTELLIGENT SPEECH SYNTHESIS ENGINE
@@ -1729,6 +1821,16 @@ export async function announcePaymentAlert(
   const appLabel = getCleanAppName(appId);
   const amountWords = getAmountInWordsForLang(amount, lang);
 
+  // Check ON/OFF setting for sender-name announcements
+  const effectiveSenderName =
+    settings.announceSenderName !== false &&
+    senderName &&
+    senderName.trim().length > 0 &&
+    senderName.trim().toLowerCase() !== 'customer' &&
+    senderName.trim().toLowerCase() !== 'unknown'
+      ? senderName.trim()
+      : undefined;
+
   let displaySubtitle = '';
   let fullSpokenText = '';
   let phoneticGuide = '';
@@ -1736,17 +1838,18 @@ export async function announcePaymentAlert(
   let speechPitch = settings.pitch;
 
   if (persona) {
-    const alertData = persona.buildAlert(amount, appLabel, amountWords, senderName);
+    const alertData = persona.buildAlert(amount, appLabel, amountWords, effectiveSenderName);
     displaySubtitle = alertData.displayBanner;
     fullSpokenText = alertData.fullSpeechText;
     phoneticGuide = alertData.phoneticText;
     speechRate = Math.max(0.75, Math.min(1.4, settings.rate * persona.speechRate));
     speechPitch = Math.max(0.6, Math.min(1.4, settings.pitch * persona.speechPitch));
   } else {
-    displaySubtitle = buildSpokenText(amount, appId, settings.selectedLanguage, senderName, false);
+    displaySubtitle = buildSpokenText(amount, appId, settings.selectedLanguage, effectiveSenderName, false);
     fullSpokenText = displaySubtitle;
-    phoneticGuide = buildPhoneticSpokenText(amount, appId, settings.selectedLanguage);
+    phoneticGuide = buildPhoneticSpokenText(amount, appId, settings.selectedLanguage, effectiveSenderName);
   }
+
 
   onSpeechStateChange?.(true);
   onAnnouncementText?.(displaySubtitle);
@@ -1799,9 +1902,10 @@ export async function announcePaymentAlert(
     amount,
     appId,
     lang,
-    senderName,
+    effectiveSenderName,
     settings.preferredVoiceUri
   );
+
 
   let finalSpokenText = fullSpokenText;
   if (settings.voiceMode === 'phonetic') {

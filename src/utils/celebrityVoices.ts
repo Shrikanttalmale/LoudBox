@@ -760,9 +760,62 @@ export function getPersonasForLanguage(langCode: LanguageCode): CelebrityVoicePe
 }
 
 /**
- * Look up a persona by unique ID
+ * Look up a persona by unique ID with automatic customer name integration
  */
 export function getPersonaById(id?: string): CelebrityVoicePersona | undefined {
   if (!id) return undefined;
-  return CELEBRITY_VOICE_PERSONAS.find((p) => p.id === id);
+  const persona = CELEBRITY_VOICE_PERSONAS.find((p) => p.id === id);
+  if (!persona) return undefined;
+
+  return {
+    ...persona,
+    buildAlert: (amount, appName, amountWords, customerName) => {
+      const base = persona.buildAlert(amount, appName, amountWords, customerName);
+      if (!customerName || customerName.trim().length === 0 || customerName.trim().toLowerCase() === 'customer' || customerName.trim().toLowerCase() === 'unknown') {
+        return base;
+      }
+      const cleanName = customerName.trim();
+      let phraseWithSender = base.fullSpeechText;
+      let bannerWithSender = base.displayBanner;
+
+      // Enhance Marathi
+      if (persona.languageCode === 'mr' && !phraseWithSender.includes(cleanName)) {
+        phraseWithSender = phraseWithSender.replace('वर', `वर ${cleanName} कडून`);
+        bannerWithSender = bannerWithSender.replace('वर ₹', `वर ${cleanName} कडून ₹`);
+      }
+      // Enhance Hindi
+      else if (persona.languageCode === 'hi' && !phraseWithSender.includes(cleanName)) {
+        phraseWithSender = phraseWithSender.replace('पर', `पर ${cleanName} से`);
+        bannerWithSender = bannerWithSender.replace('पर ₹', `पर ${cleanName} से ₹`);
+      }
+      // Enhance Punjabi
+      else if (persona.languageCode === 'pa' && !phraseWithSender.includes(cleanName)) {
+        phraseWithSender = phraseWithSender.replace('ਤੇ', `ਤੇ ${cleanName} ਵੱਲੋਂ`);
+        bannerWithSender = bannerWithSender.replace('ਤੇ ₹', `ਤੇ ${cleanName} ਵੱਲੋਂ ₹`);
+      }
+      // Enhance Tamil
+      else if (persona.languageCode === 'ta' && !phraseWithSender.includes(cleanName)) {
+        phraseWithSender = phraseWithSender.replace('மூலம்', `மூலம் ${cleanName} விடம் இருந்து`);
+        bannerWithSender = bannerWithSender.replace('₹', `${cleanName} விடம் இருந்து ₹`);
+      }
+      // Enhance Telugu
+      else if (persona.languageCode === 'te' && !phraseWithSender.includes(cleanName)) {
+        phraseWithSender = phraseWithSender.replace('లో', `లో ${cleanName} నుండి`);
+        bannerWithSender = bannerWithSender.replace('₹', `${cleanName} నుండి ₹`);
+      }
+      // Enhance English
+      else if (!phraseWithSender.includes(cleanName)) {
+        phraseWithSender = `${phraseWithSender} from ${cleanName}`;
+        bannerWithSender = bannerWithSender.replace(/"$/, ` from ${cleanName}"`);
+      }
+
+      return {
+        ...base,
+        spokenText: phraseWithSender,
+        fullSpeechText: phraseWithSender,
+        displayBanner: bannerWithSender,
+      };
+    },
+  };
 }
+

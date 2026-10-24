@@ -216,6 +216,8 @@ export default function App() {
       id: `tx-${Date.now()}`,
       timestamp: Date.now(),
       time: 'Just now',
+      source: newTx.source || 'notification',
+      isNotificationDerived: newTx.isNotificationDerived ?? true,
     };
     setTransactions((prev) => [fullTx, ...prev]);
   };

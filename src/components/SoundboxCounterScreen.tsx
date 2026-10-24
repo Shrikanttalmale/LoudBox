@@ -80,7 +80,9 @@ export const SoundboxCounterScreen: React.FC<SoundboxCounterScreenProps> = ({
     setAudioDiagnosticsOk(true);
   };
 
-  const todayTotal = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+  const todayStart = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).getTime();
+  const todayTransactions = transactions.filter(tx => tx.timestamp >= todayStart);
+  const todayTotal = todayTransactions.reduce((sum, tx) => sum + tx.amount, 0);
 
   return (
     <div className="flex flex-col gap-4 p-4 text-white">
@@ -147,8 +149,9 @@ export const SoundboxCounterScreen: React.FC<SoundboxCounterScreenProps> = ({
           <div className="flex items-center gap-1.5 text-xs text-purple-300 bg-purple-950/70 px-2.5 py-1 rounded-full border border-purple-800/50 font-medium shadow-sm">
             <span>🔊 {SUPPORTED_LANGUAGES.find(l => l.code === audioSettings.selectedLanguage)?.nativeName}</span>
             <span className="text-purple-400/50">•</span>
-            <span className="text-emerald-400">📱 {SUPPORTED_LANGUAGES.find(l => l.code === appLanguage)?.nativeName || appLanguage}</span>
+            <span className="text-cyan-300 text-[11px] font-mono">👤 {audioSettings.announceSenderName !== false ? 'Payer: ON' : 'Payer: OFF'}</span>
           </div>
+
         </div>
 
         {/* Animated Speaker Visualizer */}
@@ -216,15 +219,20 @@ export const SoundboxCounterScreen: React.FC<SoundboxCounterScreenProps> = ({
           className="w-full mt-3 bg-slate-950/80 border border-slate-800 hover:border-purple-500/40 rounded-2xl p-3 flex items-center justify-between cursor-pointer transition group"
         >
           <div>
-            <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">{t(appLanguage, 'todays_collection')}</span>
-            <div className="text-2xl font-black text-emerald-400 font-mono tracking-tight">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold">{t(appLanguage, 'todays_collection')}</span>
+              <span className="text-[9px] bg-amber-500/15 text-amber-300 font-bold px-1.5 py-0.2 rounded border border-amber-500/30">
+                Unverified Alert
+              </span>
+            </div>
+            <div className="text-2xl font-black text-emerald-400 font-mono tracking-tight mt-0.5">
               ₹{todayTotal.toLocaleString('en-IN')}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-400 group-hover:text-purple-300 transition font-medium">
-              {transactions.length} {t(appLanguage, 'payments')}
+              {todayTransactions.length} {t(appLanguage, 'payments')}
             </span>
             <div className="w-7 h-7 rounded-full bg-slate-800 group-hover:bg-purple-600/30 flex items-center justify-center text-slate-300 group-hover:text-purple-300 transition">
               <ArrowUpRight className="w-4 h-4" />

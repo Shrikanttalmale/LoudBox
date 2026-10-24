@@ -1,4 +1,7 @@
 import { UpiAppId, LanguageCode } from '../utils/audioEngine';
+export type { UpiAppId, LanguageCode };
+
+export type TransactionSource = 'notification' | 'bank_sync' | 'manual' | 'qr_instant';
 
 export interface Transaction {
   id: string;
@@ -11,6 +14,34 @@ export interface Transaction {
   status: 'SUCCESS' | 'PENDING' | 'FAILED';
   note?: string;
   vpa?: string;
+  source?: TransactionSource;
+  isNotificationDerived?: boolean;
+}
+
+export type ReportTimeframe = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
+
+export interface ReportConfig {
+  timeframe: ReportTimeframe;
+  startDate?: string; // YYYY-MM-DD
+  endDate?: string;   // YYYY-MM-DD
+  includeSenderNames: boolean;
+  selectedApp?: UpiAppId | 'all';
+}
+
+export interface ReportSummary {
+  periodLabel: string;
+  startDateStr: string;
+  endDateStr: string;
+  totalAmount: number;
+  totalCount: number;
+  averageAmount: number;
+  appBreakdown: Record<string, { total: number; count: number; percentage: number }>;
+  notificationDerivedTotal: number;
+  notificationDerivedCount: number;
+  verifiedBankTotal: number;
+  verifiedBankCount: number;
+  transactions: Transaction[];
+  generatedAt: number;
 }
 
 export interface MerchantProfile {
@@ -218,10 +249,18 @@ function generateInitialTransactions(): Transaction[] {
       status: 'SUCCESS',
       vpa: `${h.name.toLowerCase().replace(/[^a-z0-9]/g, '')}@upi`,
       note: 'Payment received via UPI QR',
+      source: 'notification' as const,
+      isNotificationDerived: true,
     };
   });
 
-  return [...baseToday, ...historicalTx];
+  const baseTodayMapped = baseToday.map(tx => ({
+    ...tx,
+    source: 'notification' as const,
+    isNotificationDerived: true,
+  }));
+
+  return [...baseTodayMapped, ...historicalTx];
 }
 
 export const INITIAL_TRANSACTIONS: Transaction[] = generateInitialTransactions();

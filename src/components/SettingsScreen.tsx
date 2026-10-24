@@ -24,8 +24,19 @@ import {
   Moon,
   Zap,
   FileText,
-  Smartphone
+  Smartphone,
+  UserCheck,
+  AlertTriangle,
+  Ban,
+  RefreshCw,
+  User
 } from 'lucide-react';
+import { 
+  parseUpiNotification, 
+  SAMPLE_NOTIFICATION_TEST_CASES, 
+  ParsedUpiNotification, 
+  resetDeduplicationCache 
+} from '../utils/upiNotificationParser';
 import { MerchantProfile } from '../types/soundbox';
 import { 
   AudioSettings, 
@@ -111,6 +122,16 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   // Pronunciation testing states
   const [pronunciationTestAmount, setPronunciationTestAmount] = useState<number>(500);
   const [pronunciationApp, setPronunciationApp] = useState<'paytm' | 'phonepe' | 'gpay' | 'bhim'>('paytm');
+
+  // Notification Parser & Sender Name Testing States
+  const [selectedTestCaseId, setSelectedTestCaseId] = useState<string>('gpay_with_name');
+  const [testNotifTitle, setTestNotifTitle] = useState<string>('Rahul Sharma');
+  const [testNotifBody, setTestNotifBody] = useState<string>('Paid you ₹500.00 via Google Pay');
+  const [parsedResult, setParsedResult] = useState<ParsedUpiNotification>(() =>
+    parseUpiNotification('Rahul Sharma', 'Paid you ₹500.00 via Google Pay', undefined, { checkDuplicates: false })
+  );
+  const [testDuplicateStatus, setTestDuplicateStatus] = useState<string | null>(null);
+
 
   // App UI display language states
   const [appLangSearch, setAppLangSearch] = useState('');
@@ -1062,7 +1083,39 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 </p>
               </div>
 
+              {/* Announce Sender Name Toggle */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs">
+                <div className="space-y-0.5 max-w-[75%]">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-200">
+                    <UserCheck className="w-4 h-4 text-purple-400" />
+                    <span>Announce Sender / Payer Name</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-tight">
+                    Speaks customer's name with amount (e.g. "Received ₹500 from Rahul Sharma"). If turned off or name is unknown, announces amount only.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() =>
+                    setAudioSettings((prev) => ({
+                      ...prev,
+                      announceSenderName: !(prev.announceSenderName ?? true),
+                    }))
+                  }
+                  className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                    audioSettings.announceSenderName !== false ? 'bg-purple-600' : 'bg-slate-700'
+                  }`}
+                >
+                  <span
+                    className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${
+                      audioSettings.announceSenderName !== false ? 'left-6' : 'left-1'
+                    }`}
+                  />
+                </button>
+              </div>
+
               {/* Regional Accuracy Note */}
+
               <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-2.5 text-[10px] text-slate-300 flex flex-col gap-1">
                 <span className="font-bold text-purple-300 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-purple-400" />
@@ -1084,9 +1137,10 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             </div>
           )}
 
-          {/* SUBMENU 4: NOTIFICATION LISTENER PERMISSIONS */}
+          {/* SUBMENU 4: NOTIFICATION LISTENER PERMISSIONS & PARSER */}
           {activeSubmenu === 'notifications' && (
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex flex-col gap-3">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-xl flex flex-col gap-4">
+              {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4 text-emerald-400" />
@@ -1100,49 +1154,334 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 </span>
               </div>
 
-              <p className="text-[11px] text-slate-400">
-                {t(appLanguage, 'notification_security_note')}
-              </p>
-
-              <div className="flex flex-col gap-2">
-                {[
-                  { id: 'gpay', label: 'Google Pay Alerts' },
-                  { id: 'phonepe', label: 'PhonePe UPI Alerts' },
-                  { id: 'paytm', label: 'Paytm Payments Alerts' },
-                  { id: 'bhim', label: 'BHIM UPI Alerts' },
-                  { id: 'amazonpay', label: 'Amazon Pay Alerts' },
-                ].map((app) => (
-                  <div
-                    key={app.id}
-                    className="flex items-center justify-between py-2 px-3 rounded-xl bg-slate-950/70 border border-slate-800 text-xs"
-                  >
-                    <span className="font-medium text-slate-200">{app.label}</span>
-                    <button
-                      onClick={() =>
-                        setNotificationToggles((prev) => ({
-                          ...prev,
-                          [app.id]: !prev[app.id as keyof typeof prev],
-                        }))
-                      }
-                      className={`w-9 h-5 rounded-full transition-colors relative cursor-pointer ${
-                        notificationToggles[app.id as keyof typeof notificationToggles]
-                          ? 'bg-purple-600'
-                          : 'bg-slate-700'
-                      }`}
-                    >
-                      <span
-                        className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-transform ${
-                          notificationToggles[app.id as keyof typeof notificationToggles]
-                            ? 'left-[18px]'
-                            : 'left-1'
-                        }`}
-                      />
-                    </button>
+              {/* PRIMARY FEATURE: Payer / Sender Name Announcement Setting */}
+              <div className="p-3.5 rounded-2xl bg-purple-950/30 border border-purple-500/40 text-xs space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-purple-600/30 text-purple-300 border border-purple-500/40 flex items-center justify-center font-bold">
+                      <UserCheck className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-white text-xs block">Announce Sender / Payer Name</span>
+                      <span className="text-[10px] text-purple-300 font-medium">
+                        {audioSettings.announceSenderName !== false
+                          ? '✓ ON: Speaks Payer Name + Amount'
+                          : '✕ OFF: Speaks Amount Only'}
+                      </span>
+                    </div>
                   </div>
-                ))}
+
+                  <button
+                    onClick={() =>
+                      setAudioSettings((prev) => ({
+                        ...prev,
+                        announceSenderName: !(prev.announceSenderName ?? true),
+                      }))
+                    }
+                    className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                      audioSettings.announceSenderName !== false ? 'bg-purple-600' : 'bg-slate-700'
+                    }`}
+                  >
+                    <span
+                      className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${
+                        audioSettings.announceSenderName !== false ? 'left-6' : 'left-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                <p className="text-[11px] text-slate-300 leading-relaxed bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+                  Loudbox parses incoming payment notifications from Google Pay, PhonePe, Paytm, BHIM, etc., and speaks both the customer's name and amount aloud (e.g. <em>"गूगल पे पर राहुल शर्मा से ₹५०० प्राप्त हुए"</em>). If switched OFF or if the sender's name is not in the notification, it announces only the amount.
+                </p>
+              </div>
+
+              {/* Fraud, False Alert & Duplicate Protection Shield */}
+              <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-3 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bold text-emerald-400">
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>False Alert & Fraud Shield (Automatic)</span>
+                  </div>
+                  <span className="text-[9px] text-emerald-400/80 font-mono">100% On-Device</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                  <div className="flex items-center gap-1.5 bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-800 text-slate-300">
+                    <span className="text-emerald-400 font-bold">✓</span>
+                    <span>Blocks Failed Alerts</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-800 text-slate-300">
+                    <span className="text-emerald-400 font-bold">✓</span>
+                    <span>Blocks Pending Collects</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-800 text-slate-300">
+                    <span className="text-emerald-400 font-bold">✓</span>
+                    <span>Blocks Outgoing Debits</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-slate-900/80 px-2 py-1.5 rounded-lg border border-slate-800 text-slate-300">
+                    <span className="text-emerald-400 font-bold">✓</span>
+                    <span>Blocks Refunds & OTPs</span>
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Outgoing debits (when you spend money), failed payments, unapproved collect requests, and duplicate alerts within 45s are automatically rejected.
+                </p>
+              </div>
+
+              {/* Supported UPI Apps Toggles */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-semibold text-slate-300 block">Monitored UPI Apps</span>
+                <div className="flex flex-col gap-1.5">
+                  {[
+                    { id: 'gpay', label: 'Google Pay Alerts' },
+                    { id: 'phonepe', label: 'PhonePe UPI Alerts' },
+                    { id: 'paytm', label: 'Paytm Payments Alerts' },
+                    { id: 'bhim', label: 'BHIM UPI Alerts' },
+                    { id: 'amazonpay', label: 'Amazon Pay Alerts' },
+                  ].map((app) => (
+                    <div
+                      key={app.id}
+                      className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-slate-950/70 border border-slate-800 text-xs"
+                    >
+                      <span className="font-medium text-slate-300 text-[11px]">{app.label}</span>
+                      <button
+                        onClick={() =>
+                          setNotificationToggles((prev) => ({
+                            ...prev,
+                            [app.id]: !prev[app.id as keyof typeof prev],
+                          }))
+                        }
+                        className={`w-8 h-4.5 rounded-full transition-colors relative cursor-pointer ${
+                          notificationToggles[app.id as keyof typeof notificationToggles]
+                            ? 'bg-purple-600'
+                            : 'bg-slate-700'
+                        }`}
+                      >
+                        <span
+                          className={`w-3 h-3 rounded-full bg-white absolute top-0.5 transition-transform ${
+                            notificationToggles[app.id as keyof typeof notificationToggles]
+                              ? 'left-[17px]'
+                              : 'left-0.5'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* INTERACTIVE NOTIFICATION PARSER & EXTRACTOR SIMULATOR */}
+              <div className="bg-slate-950/90 border border-purple-500/30 rounded-2xl p-3.5 space-y-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-bold text-purple-300">
+                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Notification Parser & Safety Tester</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      resetDeduplicationCache();
+                      setTestDuplicateStatus('Debounce cache cleared: ready for testing');
+                      setTimeout(() => setTestDuplicateStatus(null), 3000);
+                    }}
+                    className="text-[10px] text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer"
+                    title="Clear 45-second debounce memory"
+                  >
+                    <RefreshCw className="w-2.5 h-2.5" />
+                    <span>Reset Cache</span>
+                  </button>
+                </div>
+
+                {/* Scenario Picker */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">
+                    Choose Notification Test Case:
+                  </span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {SAMPLE_NOTIFICATION_TEST_CASES.map((tc) => (
+                      <button
+                        key={tc.id}
+                        onClick={() => {
+                          setSelectedTestCaseId(tc.id);
+                          setTestNotifTitle(tc.title);
+                          setTestNotifBody(tc.body);
+                          const res = parseUpiNotification(tc.title, tc.body, undefined, { checkDuplicates: false });
+                          setParsedResult(res);
+                        }}
+                        className={`text-left p-2 rounded-xl border text-[11px] transition cursor-pointer flex flex-col justify-between ${
+                          selectedTestCaseId === tc.id
+                            ? 'bg-purple-950/70 border-purple-400 text-white shadow-sm ring-1 ring-purple-500/50'
+                            : 'bg-slate-900/70 border-slate-800 text-slate-300 hover:border-slate-700'
+                        }`}
+                      >
+                        <span className="font-bold truncate text-[11px]">{tc.name}</span>
+                        <span className="text-[9px] text-slate-400 line-clamp-1">{tc.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Input Fields */}
+                <div className="space-y-2 pt-1 border-t border-slate-800/80">
+                  <div className="space-y-0.5">
+                    <label className="text-[10px] text-slate-400 font-mono">Notification Title:</label>
+                    <input
+                      type="text"
+                      value={testNotifTitle}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTestNotifTitle(val);
+                        setParsedResult(parseUpiNotification(val, testNotifBody, undefined, { checkDuplicates: false }));
+                      }}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                  <div className="space-y-0.5">
+                    <label className="text-[10px] text-slate-400 font-mono">Notification Message Body:</label>
+                    <textarea
+                      rows={2}
+                      value={testNotifBody}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setTestNotifBody(val);
+                        setParsedResult(parseUpiNotification(testNotifTitle, val, undefined, { checkDuplicates: false }));
+                      }}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-purple-500 resize-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Analysis Card */}
+                {parsedResult && (
+                  <div className={`p-3 rounded-xl border space-y-2 ${
+                    parsedResult.isValidPayment
+                      ? 'bg-emerald-950/30 border-emerald-500/40'
+                      : 'bg-rose-950/30 border-rose-500/40'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1 ${
+                        parsedResult.isValidPayment
+                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                      }`}>
+                        {parsedResult.isValidPayment ? (
+                          <>
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            <span>Valid Incoming Payment</span>
+                          </>
+                        ) : (
+                          <>
+                            <Ban className="w-3 h-3 text-rose-400" />
+                            <span>Blocked: {parsedResult.rejectionReason}</span>
+                          </>
+                        )}
+                      </span>
+
+                      <span className="text-[10px] font-mono text-slate-400">
+                        App: <strong className="text-white">{parsedResult.appName}</strong>
+                      </span>
+                    </div>
+
+                    {parsedResult.isValidPayment ? (
+                      <div className="space-y-1.5 text-[11px]">
+                        <div className="grid grid-cols-2 gap-2 bg-slate-900/70 p-2 rounded-lg border border-slate-800">
+                          <div>
+                            <span className="text-[10px] text-slate-400 block">Extracted Amount:</span>
+                            <span className="font-bold font-mono text-emerald-400 text-sm">
+                              ₹{parsedResult.amount?.toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-slate-400 block">Extracted Sender:</span>
+                            <span className="font-bold text-white text-xs">
+                              {parsedResult.senderName ? (
+                                <span className="text-purple-300 flex items-center gap-1">
+                                  <User className="w-3 h-3 text-purple-400" />
+                                  {parsedResult.senderName}
+                                </span>
+                              ) : (
+                                <span className="text-amber-300 italic text-[10px]">None (Announcing amount only)</span>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Spoken Voice Preview */}
+                        <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+                          <span className="text-[9px] uppercase tracking-wider text-slate-400 block">
+                            🔊 Spoken Announcement ({audioSettings.announceSenderName !== false && parsedResult.senderName ? 'Name + Amount' : 'Amount Only'}):
+                          </span>
+                          <p className="text-xs text-purple-200 font-mono mt-0.5 font-bold leading-relaxed">
+                            "{buildSpokenText(
+                              parsedResult.amount || 0,
+                              parsedResult.upiApp,
+                              audioSettings.selectedLanguage,
+                              audioSettings.announceSenderName !== false ? parsedResult.senderName : undefined
+                            )}"
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-rose-200 bg-slate-900/60 p-2.5 rounded-lg border border-rose-900/40">
+                        <span className="font-bold text-rose-400 block text-xs">False Alert Protection Triggered:</span>
+                        <p className="text-slate-300 text-[10px] mt-0.5 leading-relaxed">
+                          {parsedResult.explanation}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 pt-1">
+                      {parsedResult.isValidPayment ? (
+                        <button
+                          onClick={async () => {
+                            if (parsedResult.amount) {
+                              await announcePaymentAlert(
+                                parsedResult.amount,
+                                parsedResult.upiApp,
+                                audioSettings,
+                                parsedResult.senderName,
+                                setIsSpeaking
+                              );
+                            }
+                          }}
+                          className="flex-1 py-2 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shadow-md"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-white" />
+                          <span>Announce Aloud via TTS</span>
+                        </button>
+                      ) : (
+                        <div className="flex-1 py-1.5 text-center text-[10px] text-slate-400 italic">
+                          Voice alert suppressed (Safety filter active)
+                        </div>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          const res = parseUpiNotification(testNotifTitle, testNotifBody, undefined, { checkDuplicates: true });
+                          if (!res.isValidPayment && res.rejectionReason === 'DUPLICATE_NOTIFICATION') {
+                            setTestDuplicateStatus('✓ Duplicate Blocked: Successfully caught repeat alert within 45s!');
+                          } else {
+                            setTestDuplicateStatus('First alert cached in memory. Click again within 45s to test duplicate blocking!');
+                          }
+                          setTimeout(() => setTestDuplicateStatus(null), 4000);
+                        }}
+                        className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-purple-300 hover:text-white font-semibold text-xs transition cursor-pointer"
+                        title="Simulate receiving the same notification twice within 45s"
+                      >
+                        Test Duplicate Filter
+                      </button>
+                    </div>
+
+                    {testDuplicateStatus && (
+                      <p className="text-[10px] text-amber-300 font-mono text-center animate-pulse pt-0.5">
+                        {testDuplicateStatus}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
+
 
           {/* SUBMENU 5: COUNTER MODE & SCREEN WAKE LOCK */}
           {activeSubmenu === 'counter_awake' && (

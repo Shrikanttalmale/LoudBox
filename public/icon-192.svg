@@ -2,20 +2,22 @@
   <defs>
     <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#9333ea" />
-      <stop offset="100%" stop-color="#6b21a8" />
+      <stop offset="50%" stop-color="#7e22ce" />
+      <stop offset="100%" stop-color="#4338ca" />
     </linearGradient>
   </defs>
-  <rect width="192" height="192" rx="48" fill="url(#purpleGrad)" />
-  <g transform="translate(24, 24) scale(0.28)">
-    <rect x="70" y="90" width="200" height="330" rx="30" fill="#18181b" />
-    <rect x="90" y="115" width="160" height="60" rx="12" fill="#27272a" />
-    <circle cx="115" cy="145" r="8" fill="#22c55e" />
-    <circle cx="170" cy="280" r="85" fill="#27272a" stroke="#7c3aed" stroke-width="6" />
-    <circle cx="170" cy="280" r="55" fill="#3f3f46" />
-    <circle cx="170" cy="280" r="28" fill="#a855f7" />
-    <path d="M 320 200 A 110 110 0 0 1 320 360" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" />
-    <path d="M 370 160 A 170 170 0 0 1 370 400" fill="none" stroke="#c084fc" stroke-width="16" stroke-linecap="round" />
-    <circle cx="95" cy="385" r="26" fill="#10b981" />
-    <text x="95" y="394" font-family="Arial, sans-serif" font-size="26" font-weight="bold" fill="#ffffff" text-anchor="middle">₹</text>
-  </g>
+  <!-- Background Squircle with neon border -->
+  <rect x="6" y="6" width="180" height="180" rx="44" fill="url(#purpleGrad)" stroke="#c084fc" stroke-width="3" stroke-opacity="0.8" />
+  
+  <!-- Indian Rupee Symbol (₹) -->
+  <rect x="64" y="42" width="60" height="8.5" fill="#ffffff" />
+  <rect x="64" y="58" width="53" height="8.5" fill="#ffffff" />
+  <rect x="75" y="42" width="9.5" height="42" fill="#ffffff" />
+  <path d="M 83 46.2 L 95 46.2 A 16 16 0 0 1 95 78.2 L 83 78.2" fill="none" stroke="#ffffff" stroke-width="8.5" stroke-linecap="butt" stroke-linejoin="round" />
+  <path d="M 88 78.2 L 109 101" fill="none" stroke="#ffffff" stroke-width="9.5" stroke-linecap="square" />
+
+  <!-- Speaker & Sound Waves -->
+  <polygon points="76,134 85,134 94,126 94,152 85,144 76,144" fill="#ede9fe" />
+  <path d="M 101 133 A 8 8 0 0 1 101 145" fill="none" stroke="#ede9fe" stroke-width="3.5" stroke-linecap="round" />
+  <path d="M 109 127 A 16 16 0 0 1 109 151" fill="none" stroke="#ede9fe" stroke-width="3.5" stroke-linecap="round" />
 </svg>
