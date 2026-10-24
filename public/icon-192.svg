@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9333ea" />
+      <stop offset="100%" stop-color="#6b21a8" />
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="48" fill="url(#purpleGrad)" />
+  <g transform="translate(24, 24) scale(0.28)">
+    <rect x="70" y="90" width="200" height="330" rx="30" fill="#18181b" />
+    <rect x="90" y="115" width="160" height="60" rx="12" fill="#27272a" />
+    <circle cx="115" cy="145" r="8" fill="#22c55e" />
+    <circle cx="170" cy="280" r="85" fill="#27272a" stroke="#7c3aed" stroke-width="6" />
+    <circle cx="170" cy="280" r="55" fill="#3f3f46" />
+    <circle cx="170" cy="280" r="28" fill="#a855f7" />
+    <path d="M 320 200 A 110 110 0 0 1 320 360" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" />
+    <path d="M 370 160 A 170 170 0 0 1 370 400" fill="none" stroke="#c084fc" stroke-width="16" stroke-linecap="round" />
+    <circle cx="95" cy="385" r="26" fill="#10b981" />
+    <text x="95" y="394" font-family="Arial, sans-serif" font-size="26" font-weight="bold" fill="#ffffff" text-anchor="middle">₹</text>
+  </g>
+</svg>

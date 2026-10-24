@@ -1,0 +1,6 @@
+{
+  "name": "Soundbox - UPI Mobile Alerts",
+  "description": "All-in-One Mobile UPI Soundbox app for Android. Instant voice alerts for Google Pay, PhonePe, Paytm, BHIM, and collections tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
