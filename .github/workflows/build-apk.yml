@@ -1,4 +1,4 @@
-name: Build Android Soundbox APK & Play Store Bundle
+name: Build Android Loudbox APK & Play Store Bundle
 
 on:
   push:
@@ -24,10 +24,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm install --legacy-peer-deps
 
       - name: Build Web Application
         run: npm run build
@@ -51,11 +50,11 @@ jobs:
       - name: Upload Testing APK Artifact (Install directly on phone)
         uses: actions/upload-artifact@v4
         with:
-          name: Soundbox-Installable-Test-APK
+          name: Loudbox-Installable-Test-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload Google Play Bundle (.aab) Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Soundbox-GooglePlay-Release-AAB
+          name: Loudbox-GooglePlay-Release-AAB
           path: android/app/build/outputs/bundle/release/app-release.aab
