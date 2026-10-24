@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Soundbox - UPI Mobile Alerts",
-  "short_name": "Soundbox",
+  "name": "Loudbox - UPI Mobile Alerts",
+  "short_name": "Loudbox",
   "description": "Get instant voice alerts for UPI payments on your phone with zero monthly rental.",
   "start_url": "/",
   "scope": "/",

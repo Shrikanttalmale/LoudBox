@@ -80,7 +80,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
             <div>
               <span className="font-extrabold text-xl tracking-tight bg-gradient-to-r from-purple-500 to-indigo-500 bg-clip-text text-transparent">
-                Soundbox
+                Loudbox
               </span>
               <span className="hidden sm:inline-block ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-600/10 text-purple-400 border border-purple-500/20">
                 UPI Mobile Alerts
@@ -137,7 +137,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-4xl leading-[1.1] mb-6">
             All-in-One Mobile <br />
             <span className="bg-gradient-to-r from-purple-400 via-purple-300 to-indigo-400 bg-clip-text text-transparent">
-              UPI Soundbox
+              UPI Loudbox
             </span>
           </h1>
 

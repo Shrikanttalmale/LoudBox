@@ -27,10 +27,10 @@ export const AndroidSplashScreen: React.FC<AndroidSplashScreenProps> = ({ onFini
         </div>
 
         <h1 className="text-3xl font-extrabold tracking-tight text-white mb-2">
-          Soundbox
+          Loudbox
         </h1>
         <p className="text-xs text-purple-300 font-medium tracking-wide">
-          All-in-One Mobile UPI Soundbox
+          All-in-One Mobile UPI Loudbox
         </p>
       </div>
 
@@ -39,7 +39,7 @@ export const AndroidSplashScreen: React.FC<AndroidSplashScreenProps> = ({ onFini
         {/* Loading Spinner */}
         <div className="w-5 h-5 rounded-full border-2 border-purple-500/30 border-t-purple-400 animate-spin mb-3"></div>
         <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">
-          Soundbox by Propel
+          Loudbox by Propel
         </span>
         <span className="text-[9px] text-slate-600 font-mono">
           in.mysoundbox.app • v4.8

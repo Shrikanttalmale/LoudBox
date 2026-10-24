@@ -78,7 +78,7 @@ public class SoundboxNotificationListenerService extends NotificationListenerSer
         );
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Soundbox Active & Listening")
+                .setContentTitle("Loudbox Active & Listening")
                 .setContentText("Monitoring UPI alerts in background (Google Pay, PhonePe, Paytm, BHIM)")
                 .setSmallIcon(android.R.drawable.ic_lock_silent_mode_off)
                 .setContentIntent(pendingIntent)
@@ -93,10 +93,10 @@ public class SoundboxNotificationListenerService extends NotificationListenerSer
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel serviceChannel = new NotificationChannel(
                     CHANNEL_ID,
-                    "Soundbox Background Service",
+                    "Loudbox Background Service",
                     NotificationManager.IMPORTANCE_LOW
             );
-            serviceChannel.setDescription("Keeps Soundbox alive to announce UPI payments even when closed");
+            serviceChannel.setDescription("Keeps Loudbox alive to announce UPI payments even when closed");
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(serviceChannel);

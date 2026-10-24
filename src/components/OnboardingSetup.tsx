@@ -515,7 +515,7 @@ export const OnboardingSetup: React.FC<OnboardingSetupProps> = ({
           </div>
 
           <h2 className="text-2xl font-black text-white tracking-tight mb-2">
-            Soundbox Ready!
+            Loudbox Ready!
           </h2>
           <p className="text-xs text-slate-300 max-w-xs leading-relaxed mb-4">
             Your shop <span className="font-bold text-white">"{shopName}"</span> is set to announce payments in{' '}

@@ -36,7 +36,7 @@
         <!-- Native Soundbox Background Notification Service (Runs 24/7 even when closed) -->
         <service
             android:name=".SoundboxNotificationListenerService"
-            android:label="Soundbox UPI Payment Alert Service"
+            android:label="Loudbox UPI Payment Alert Service"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
             android:foregroundServiceType="mediaPlayback"
             android:exported="true">

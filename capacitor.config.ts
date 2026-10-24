@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'in.mysoundbox.app',
-  appName: 'Soundbox',
+  appName: 'Loudbox',
   webDir: 'dist',
   server: {
     androidScheme: 'https',

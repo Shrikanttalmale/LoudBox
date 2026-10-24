@@ -99,7 +99,7 @@ export const AndroidHomeScreen: React.FC<AndroidHomeScreenProps> = ({
           </div>
 
           <span className="text-xs font-bold text-white tracking-wide text-center drop-shadow-md">
-            Soundbox
+            Loudbox
           </span>
         </button>
 
@@ -172,7 +172,7 @@ export const AndroidHomeScreen: React.FC<AndroidHomeScreenProps> = ({
           <button
             onClick={onOpenSoundbox}
             className="w-12 h-12 rounded-2xl bg-purple-600 hover:bg-purple-500 border border-purple-400 flex flex-col items-center justify-center text-white shadow-lg cursor-pointer transition transform active:scale-95"
-            title="Launch Soundbox"
+            title="Launch Loudbox"
           >
             <span className="text-base font-black leading-none">₹</span>
             <span className="text-[8px] font-bold uppercase tracking-tighter">Alerts</span>
