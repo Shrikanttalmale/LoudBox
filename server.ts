@@ -44,7 +44,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
   raj: 'Rajasthani',
 };
 
-// High-fidelity Regional Soundbox Voice Engine
+// High-fidelity Regional Loudbox Voice Engine
 // Delivers genuine celebrity voice styles (deep baritone, energetic comedy, melodious singer)
 app.get('/api/tts', async (req, res) => {
   const text = (req.query.text as string) || '';
@@ -153,7 +153,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Soundbox server listening on http://0.0.0.0:${PORT}`);
+    console.log(`Loudbox server listening on http://0.0.0.0:${PORT}`);
   });
 }
 

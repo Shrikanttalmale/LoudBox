@@ -37,10 +37,10 @@ export interface AppThemeConfig {
 export const APP_THEMES: AppThemeConfig[] = [
   {
     id: 'midnight',
-    name: 'Midnight Soundbox',
+    name: 'Midnight Loudbox',
     nativeName: 'डिफ़ॉल्ट मिडनाइट',
     badge: '🌙',
-    description: 'Deep slate & neon violet. Modern fintech soundbox look with soft contrast.',
+    description: 'Deep slate & neon violet. Modern fintech loudbox look with soft contrast.',
     tagline: 'Balanced eye-comfort for evening & indoor counters',
     isDark: true,
     batterySaver: false,

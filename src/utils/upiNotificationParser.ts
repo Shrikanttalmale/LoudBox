@@ -302,7 +302,7 @@ export function parseUpiNotification(
       upiApp: appId,
       appName,
       rejectionReason: 'OUTGOING_DEBIT',
-      explanation: 'Ignored: Outgoing debit/money sent alert. Soundbox only announces incoming customer payments.',
+      explanation: 'Ignored: Outgoing debit/money sent alert. Loudbox only announces incoming customer payments.',
       rawTitle: title,
       rawText: body,
     };

@@ -3,7 +3,7 @@ import { AndroidFrame } from './components/AndroidFrame';
 import { AndroidHomeScreen } from './components/AndroidHomeScreen';
 import { AndroidSplashScreen } from './components/AndroidSplashScreen';
 import { OnboardingSetup } from './components/OnboardingSetup';
-import { SoundboxCounterScreen } from './components/SoundboxCounterScreen';
+import { LoudboxCounterScreen } from './components/LoudboxCounterScreen';
 import { CollectionsScreen } from './components/CollectionsScreen';
 import { QRStandScreen } from './components/QRStandScreen';
 import { SettingsScreen } from './components/SettingsScreen';
@@ -17,7 +17,7 @@ import {
   INITIAL_TRANSACTIONS, 
   MerchantProfile, 
   Transaction 
-} from './types/soundbox';
+} from './types/loudbox';
 import { 
   AudioSettings, 
   DEFAULT_AUDIO_SETTINGS,
@@ -35,18 +35,18 @@ export default function App() {
   
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('mysoundbox_onboarded') === 'true';
+      return (localStorage.getItem('loudbox_onboarded') || localStorage.getItem('mysoundbox_onboarded')) === 'true';
     } catch {
       return false;
     }
   });
 
-  const [activeTab, setActiveTab] = useState<'soundbox' | 'collections' | 'qrstand' | 'settings'>('soundbox');
+  const [activeTab, setActiveTab] = useState<'loudbox' | 'soundbox' | 'collections' | 'qrstand' | 'settings'>('loudbox');
   
   // Persistent State with localStorage
   const [merchant, setMerchant] = useState<MerchantProfile>(() => {
     try {
-      const saved = localStorage.getItem('mysoundbox_merchant');
+      const saved = localStorage.getItem('loudbox_merchant') || localStorage.getItem('mysoundbox_merchant');
       return saved ? JSON.parse(saved) : DEFAULT_MERCHANT;
     } catch {
       return DEFAULT_MERCHANT;
@@ -55,7 +55,7 @@ export default function App() {
 
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     try {
-      const saved = localStorage.getItem('mysoundbox_transactions');
+      const saved = localStorage.getItem('loudbox_transactions') || localStorage.getItem('mysoundbox_transactions');
       return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
     } catch {
       return INITIAL_TRANSACTIONS;
@@ -64,7 +64,7 @@ export default function App() {
 
   const [audioSettings, setAudioSettings] = useState<AudioSettings>(() => {
     try {
-      const saved = localStorage.getItem('mysoundbox_audio_settings');
+      const saved = localStorage.getItem('loudbox_audio_settings') || localStorage.getItem('mysoundbox_audio_settings');
       if (saved) {
         const parsed = JSON.parse(saved);
         return { ...DEFAULT_AUDIO_SETTINGS, ...parsed, voicePersonaId: undefined };
@@ -77,7 +77,7 @@ export default function App() {
 
   const [appLanguage, setAppLanguage] = useState<AppLanguage>(() => {
     try {
-      const saved = localStorage.getItem('mysoundbox_app_lang');
+      const saved = localStorage.getItem('loudbox_app_lang') || localStorage.getItem('mysoundbox_app_lang');
       if (saved && SUPPORTED_APP_LANGUAGES.some((l) => l.code === saved)) {
         return saved as AppLanguage;
       }
@@ -89,7 +89,7 @@ export default function App() {
 
   const [appTheme, setAppTheme] = useState<AppThemeId>(() => {
     try {
-      const saved = localStorage.getItem('mysoundbox_app_theme') as AppThemeId;
+      const saved = (localStorage.getItem('loudbox_app_theme') || localStorage.getItem('mysoundbox_app_theme')) as AppThemeId;
       if (saved && ['midnight', 'light_daylight', 'amoled_black', 'emerald_cash', 'royal_blue', 'sunset_gold'].includes(saved)) {
         return saved;
       }
@@ -106,7 +106,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('mysoundbox_app_lang', appLanguage);
+      localStorage.setItem('loudbox_app_lang', appLanguage);
     } catch (e) {
       console.warn('localStorage error:', e);
     }
@@ -114,7 +114,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('mysoundbox_app_theme', appTheme);
+      localStorage.setItem('loudbox_app_theme', appTheme);
     } catch (e) {
       console.warn('localStorage error:', e);
     }
@@ -123,7 +123,7 @@ export default function App() {
   // Sync state to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('mysoundbox_merchant', JSON.stringify(merchant));
+      localStorage.setItem('loudbox_merchant', JSON.stringify(merchant));
     } catch (e) {
       console.warn('localStorage error:', e);
     }
@@ -131,7 +131,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('mysoundbox_transactions', JSON.stringify(transactions));
+      localStorage.setItem('loudbox_transactions', JSON.stringify(transactions));
     } catch (e) {
       console.warn('localStorage error:', e);
     }
@@ -139,7 +139,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('mysoundbox_audio_settings', JSON.stringify(audioSettings));
+      localStorage.setItem('loudbox_audio_settings', JSON.stringify(audioSettings));
     } catch (e) {
       console.warn('localStorage error:', e);
     }
@@ -147,7 +147,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('mysoundbox_onboarded', hasCompletedOnboarding ? 'true' : 'false');
+      localStorage.setItem('loudbox_onboarded', hasCompletedOnboarding ? 'true' : 'false');
     } catch (e) {
       console.warn('localStorage error:', e);
     }
@@ -174,11 +174,11 @@ export default function App() {
       }
       setDeferredPrompt(null);
     } else {
-      alert('To install Soundbox on your Android phone:\nTap the browser menu (⋮) and tap "Add to Home screen" or "Install App"');
+      alert('To install Loudbox on your Android phone:\nTap the browser menu (⋮) and tap "Add to Home screen" or "Install App"');
     }
   };
 
-  // Launch Soundbox from the home screen icon
+  // Launch Loudbox from the home screen icon
   const handleLaunchFromIcon = () => {
     unlockAudioContext();
     setAppStage('splash');
@@ -240,7 +240,7 @@ export default function App() {
         <div className="bg-gradient-to-r from-purple-700 to-indigo-700 text-white px-4 py-2 text-xs flex items-center justify-between z-50">
           <div className="flex items-center gap-2">
             <Smartphone className="w-4 h-4 text-purple-200" />
-            <span className="font-semibold">Install Soundbox Android App on your home screen</span>
+            <span className="font-semibold">Install Loudbox Android App on your home screen</span>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -262,7 +262,7 @@ export default function App() {
       {currentView === 'website' ? (
         <Suspense fallback={
           <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-purple-400 font-bold text-sm">
-            Loading Soundbox Portal...
+            Loading Loudbox Portal...
           </div>
         }>
           <LandingPage
@@ -294,7 +294,7 @@ export default function App() {
           {/* Stage 1: Android Mobile Home Screen with App Icon */}
           {appStage === 'home-screen' && (
             <AndroidHomeScreen
-              onOpenSoundbox={handleLaunchFromIcon}
+              onOpenLoudbox={handleLaunchFromIcon}
               isFirstLaunch={!hasCompletedOnboarding}
             />
           )}
@@ -318,11 +318,11 @@ export default function App() {
             />
           )}
 
-          {/* Stage 4: Active Soundbox App Dashboard */}
+          {/* Stage 4: Active Loudbox App Dashboard */}
           {appStage === 'active-app' && (
             <>
-              {activeTab === 'soundbox' && (
-                <SoundboxCounterScreen
+              {(activeTab === 'loudbox' || activeTab === 'soundbox') && (
+                <LoudboxCounterScreen
                   merchant={merchant}
                   transactions={transactions}
                   onAddTransaction={handleAddTransaction}

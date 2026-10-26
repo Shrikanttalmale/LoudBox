@@ -23,7 +23,7 @@ import {
   Clock,
   Layers
 } from 'lucide-react';
-import { Transaction } from '../types/soundbox';
+import { Transaction, UpiAppId, UPI_APPS_CONFIG } from '../types/loudbox';
 import { AppLanguage, t } from '../utils/i18n';
 
 export type ChartTimeframe = '7D' | '30D' | 'till_date';
@@ -33,6 +33,7 @@ interface DailyRevenueChartProps {
   initialTimeframe?: ChartTimeframe;
   onTimeframeChange?: (timeframe: ChartTimeframe) => void;
   appLanguage?: AppLanguage;
+  selectedApp?: UpiAppId | 'all';
 }
 
 interface PeriodDataPoint {
@@ -59,6 +60,7 @@ export const DailyRevenueChart: React.FC<DailyRevenueChartProps> = ({
   initialTimeframe = '7D',
   onTimeframeChange,
   appLanguage = 'mr',
+  selectedApp = 'all',
 }) => {
   const [timeframe, setTimeframe] = useState<ChartTimeframe>(initialTimeframe);
   const [chartMode, setChartMode] = useState<'combined' | 'revenue' | 'count'>('combined');
@@ -79,6 +81,11 @@ export const DailyRevenueChart: React.FC<DailyRevenueChartProps> = ({
     }
   };
 
+  const effectiveTransactions = useMemo(() => {
+    if (!selectedApp || selectedApp === 'all') return transactions;
+    return transactions.filter((t) => t.upiApp === selectedApp);
+  }, [transactions, selectedApp]);
+
   // Compute dynamic chart data based on active timeframe and real transactions
   const data = useMemo<PeriodDataPoint[]>(() => {
     const now = new Date();
@@ -92,7 +99,7 @@ export const DailyRevenueChart: React.FC<DailyRevenueChartProps> = ({
         const start = getStartOfDay(d);
         const end = getEndOfDay(d);
 
-        const bucketTx = transactions.filter((t) => t.timestamp >= start && t.timestamp <= end);
+        const bucketTx = effectiveTransactions.filter((t) => t.timestamp >= start && t.timestamp <= end);
         const revenue = bucketTx.reduce((sum, t) => sum + t.amount, 0);
         const count = bucketTx.length;
 
@@ -120,7 +127,7 @@ export const DailyRevenueChart: React.FC<DailyRevenueChartProps> = ({
         const start = getStartOfDay(d);
         const end = getEndOfDay(d);
 
-        const bucketTx = transactions.filter((t) => t.timestamp >= start && t.timestamp <= end);
+        const bucketTx = effectiveTransactions.filter((t) => t.timestamp >= start && t.timestamp <= end);
         const revenue = bucketTx.reduce((sum, t) => sum + t.amount, 0);
         const count = bucketTx.length;
 
@@ -144,11 +151,11 @@ export const DailyRevenueChart: React.FC<DailyRevenueChartProps> = ({
     }
 
     // timeframe === 'till_date' (All-time collections grouped by 7-day intervals leading to today)
-    if (transactions.length === 0) {
+    if (effectiveTransactions.length === 0) {
       return [];
     }
 
-    const timestamps = transactions.map((t) => t.timestamp);
+    const timestamps = effectiveTransactions.map((t) => t.timestamp);
     const minTs = Math.min(...timestamps);
     const spanDays = Math.max(14, Math.ceil((now.getTime() - minTs) / ONE_DAY));
     const intervalDays = Math.max(5, Math.ceil(spanDays / 7)); // 7-8 balanced interval buckets
@@ -160,7 +167,7 @@ export const DailyRevenueChart: React.FC<DailyRevenueChartProps> = ({
       const bEnd = new Date(now.getTime() - b * intervalDays * ONE_DAY);
       const bStart = new Date(now.getTime() - (b + 1) * intervalDays * ONE_DAY + 1);
 
-      const bucketTx = transactions.filter(
+      const bucketTx = effectiveTransactions.filter(
         (t) => t.timestamp >= bStart.getTime() && t.timestamp <= bEnd.getTime()
       );
       const revenue = bucketTx.reduce((sum, t) => sum + t.amount, 0);
@@ -272,46 +279,39 @@ export const DailyRevenueChart: React.FC<DailyRevenueChartProps> = ({
   };
 
   return (
-    <div className="bg-gradient-to-b from-slate-900/95 via-slate-900 to-slate-950 border border-purple-500/30 rounded-3xl p-4 shadow-xl flex flex-col gap-3">
+    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 shadow-sm flex flex-col gap-3">
       {/* Chart Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-purple-600/20 text-purple-400 border border-purple-500/30 flex items-center justify-center shrink-0">
-            <BarChart3 className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center shrink-0">
+            <BarChart3 className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-1.5 flex-wrap">
-              <h3 className="font-bold text-xs uppercase tracking-wider text-slate-200">
+              <h3 className="font-semibold text-xs text-white">
                 {timeframeLabels[timeframe].title}
               </h3>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                {t(appLanguage, 'live_ledger')}
-              </span>
+              {selectedApp && selectedApp !== 'all' && (
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  {UPI_APPS_CONFIG[selectedApp]?.name || selectedApp}
+                </span>
+              )}
             </div>
-            <p className="text-[10px] text-slate-400">{timeframeLabels[timeframe].subtitle}</p>
+            <p className="text-[11px] text-slate-400">
+              {selectedApp && selectedApp !== 'all'
+                ? `${UPI_APPS_CONFIG[selectedApp]?.name || selectedApp} ${t(appLanguage, 'filter_by_provider') || 'Collections Trend'}`
+                : timeframeLabels[timeframe].subtitle}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setShowDataSourceInfo(!showDataSourceInfo)}
-            className={`p-1.5 rounded-lg border transition cursor-pointer ${
-              showDataSourceInfo
-                ? 'bg-purple-600/30 text-purple-200 border-purple-500/50'
-                : 'bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white border-slate-700/50'
-            }`}
-            title={t(appLanguage, 'where_is_data_reading')}
-          >
-            <Info className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700/50 transition cursor-pointer"
-            title={isExpanded ? 'Collapse chart' : 'Expand chart'}
-          >
-            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </button>
-        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition cursor-pointer"
+          title={isExpanded ? 'Collapse chart' : 'Expand chart'}
+        >
+          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
       </div>
 
       {/* Timeframe Selector Bar: 7 Days / 30 Days (Monthly) / Till Date */}
@@ -367,7 +367,7 @@ export const DailyRevenueChart: React.FC<DailyRevenueChartProps> = ({
               </span>
               <div>
                 <strong className="text-white block font-medium">Device Local Ledger Storage:</strong>
-                Transactions are saved directly on the mobile handset in encrypted browser/app storage (`mysoundbox_transactions`).
+                Transactions are saved directly on the mobile handset in encrypted browser/app storage (`loudbox_transactions`).
               </div>
             </div>
 
@@ -377,7 +377,7 @@ export const DailyRevenueChart: React.FC<DailyRevenueChartProps> = ({
               </span>
               <div>
                 <strong className="text-white block font-medium">Real-Time UPI Notification Interceptor:</strong>
-                The Android background listener (`SoundboxNotificationListenerService.java`) intercepts incoming alerts from GPay, PhonePe, Paytm, BHIM, and bank SMSs instantly and appends them to this ledger.
+                The Android background listener (`LoudboxNotificationListenerService.java`) intercepts incoming alerts from GPay, PhonePe, Paytm, BHIM, and bank SMSs instantly and appends them to this ledger.
               </div>
             </div>
 

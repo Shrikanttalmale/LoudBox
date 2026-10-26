@@ -1,22 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { 
-  Download, 
   Copy, 
   Check, 
-  Share2, 
-  Store, 
-  CheckCircle2, 
-  Sparkles, 
-  Smartphone,
-  ShieldCheck,
-  RefreshCw,
+  Sparkles,
   QrCode as QrIcon
 } from 'lucide-react';
-import { MerchantProfile, Transaction } from '../types/soundbox';
+import { MerchantProfile, Transaction } from '../types/loudbox';
 import { AudioSettings, announcePaymentAlert, unlockAudioContext } from '../utils/audioEngine';
 import { AppLanguage, t } from '../utils/i18n';
-import confetti from 'canvas-confetti';
 
 interface QRStandScreenProps {
   merchant: MerchantProfile;
@@ -47,7 +39,7 @@ export const QRStandScreen: React.FC<QRStandScreenProps> = ({
 
   useEffect(() => {
     QRCode.toDataURL(upiIntentUrl, {
-      width: 320,
+      width: 260,
       margin: 1.5,
       color: {
         dark: '#0f172a',
@@ -64,17 +56,10 @@ export const QRStandScreen: React.FC<QRStandScreenProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSimulateCustomerPayment = async () => {
+  const handleSimulatePayment = async () => {
     unlockAudioContext();
     setIsSimulatingScan(true);
     const amount = parseFloat(customAmount) || 350;
-
-    confetti({
-      particleCount: 60,
-      spread: 70,
-      origin: { y: 0.7 },
-      colors: ['#7c3aed', '#10b981', '#3b82f6'],
-    });
 
     onAddTransaction({
       amount,
@@ -91,121 +76,82 @@ export const QRStandScreen: React.FC<QRStandScreenProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 text-white">
-      {/* Counter Stand Frame */}
-      <div className="bg-gradient-to-b from-purple-900/60 via-slate-900 to-slate-950 border-2 border-purple-500/40 rounded-3xl p-5 shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
-        {/* Stand Header Kicker */}
-        <div className="w-full flex items-center justify-between mb-3 text-xs">
-          <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30 flex items-center gap-1">
-            <QrIcon className="w-3.5 h-3.5" />
-            {t(appLanguage, 'qr_stand_title')}
-          </span>
+    <div className="flex flex-col gap-5 p-5 text-slate-100">
+      {/* Header */}
+      <div>
+        <h2 className="font-semibold text-base text-white tracking-tight">{t(appLanguage, 'tab_qrstand')}</h2>
+        <p className="text-xs text-slate-400 mt-0.5">Display on your counter for customer scans</p>
+      </div>
 
-          <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            {t(appLanguage, 'verified_merchant')}
-          </span>
+      {/* Clean Physical-Style QR Counter Card */}
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-col items-center text-center shadow-sm">
+        {/* Merchant Info */}
+        <div className="mb-4">
+          <h3 className="text-lg font-bold text-white tracking-tight">{merchant.businessName}</h3>
+          <p className="text-xs text-slate-400 mt-0.5">{merchant.category} · {merchant.city}</p>
         </div>
 
-        {/* Shop Branding */}
-        <div className="mb-3">
-          <div className="flex items-center justify-center gap-1.5">
-            <h2 className="text-xl font-extrabold text-white tracking-tight">{merchant.businessName}</h2>
-            <CheckCircle2 className="w-4 h-4 text-blue-400 fill-blue-400/20" />
-          </div>
-          <p className="text-xs text-slate-400 mt-0.5">{merchant.category} • {merchant.city}</p>
-        </div>
-
-        {/* The Real Scannable UPI QR Box */}
-        <div className="relative bg-white p-3 rounded-2xl shadow-xl border-4 border-purple-500/30 my-1 group">
+        {/* Crisp QR Code Container */}
+        <div className="bg-white p-3 rounded-2xl shadow-sm my-2">
           {qrDataUrl ? (
             <img 
               src={qrDataUrl} 
               alt="UPI Payment QR Code" 
-              className="w-52 h-52 object-contain rounded-xl"
+              className="w-48 h-48 object-contain rounded-xl"
             />
           ) : (
-            <div className="w-52 h-52 flex items-center justify-center bg-slate-100 text-slate-400 text-xs">
+            <div className="w-48 h-48 flex items-center justify-center bg-slate-100 text-slate-400 text-xs">
               {t(appLanguage, 'generating_qr')}
             </div>
           )}
-
-          {/* Center Soundbox Rupee Stamp */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-10 h-10 rounded-xl bg-purple-600 border-2 border-white shadow-lg flex items-center justify-center text-white font-black text-sm">
-              ₹
-            </div>
-          </div>
         </div>
 
-        {/* UPI ID Badge with Copy */}
-        <div className="mt-3 flex items-center gap-2 bg-slate-900 border border-slate-700/80 px-3 py-1.5 rounded-xl text-xs font-mono">
-          <span className="text-slate-300">{merchant.upiId}</span>
+        {/* UPI ID with Copy Action */}
+        <div className="mt-4 flex items-center gap-2 bg-slate-800 px-3.5 py-1.5 rounded-xl text-xs font-mono">
+          <span className="text-slate-200">{merchant.upiId}</span>
           <button
             onClick={handleCopyUPI}
-            className="text-purple-400 hover:text-purple-300 transition cursor-pointer flex items-center gap-1"
-            title={t(appLanguage, 'copy_upi')}
+            className="text-purple-400 hover:text-purple-300 transition cursor-pointer p-0.5"
+            title="Copy UPI ID"
+            aria-label="Copy UPI ID"
           >
             {copied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-[10px] text-emerald-400 font-sans font-bold">{t(appLanguage, 'copied')}</span>
-              </>
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
           </button>
         </div>
 
-        {/* Accepted Payment Apps Banner */}
-        <div className="mt-4 w-full bg-slate-950/70 border border-slate-800 rounded-2xl p-2.5">
-          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold mb-2">
-            {t(appLanguage, 'accepted_upi_apps')}
-          </p>
-          <div className="flex items-center justify-center gap-3 text-xs font-bold">
-            <span className="px-2 py-1 rounded bg-blue-600/20 text-blue-400 border border-blue-500/30">GPay</span>
-            <span className="px-2 py-1 rounded bg-purple-600/20 text-purple-400 border border-purple-500/30">PhonePe</span>
-            <span className="px-2 py-1 rounded bg-cyan-600/20 text-cyan-400 border border-cyan-500/30">Paytm</span>
-            <span className="px-2 py-1 rounded bg-emerald-600/20 text-emerald-400 border border-emerald-500/30">BHIM</span>
-            <span className="px-2 py-1 rounded bg-amber-600/20 text-amber-400 border border-amber-500/30">Amazon</span>
-          </div>
-        </div>
+        {/* Accepted Payment Apps Subtext */}
+        <p className="text-[11px] text-slate-400 mt-4">
+          Accepts Google Pay, PhonePe, Paytm, BHIM & all UPI apps
+        </p>
       </div>
 
-      {/* Counter Controls */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 flex flex-col gap-3">
-        <h3 className="font-bold text-xs uppercase tracking-wider text-slate-300">
+      {/* Simulator & Amount Controls */}
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col gap-3">
+        <label className="text-xs font-medium text-slate-300">
           {t(appLanguage, 'set_amount_optional')}
-        </h3>
+        </label>
 
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
-            <input
-              type="number"
-              value={customAmount}
-              onChange={(e) => setCustomAmount(e.target.value)}
-              placeholder={t(appLanguage, 'any_amount_placeholder')}
-              className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-purple-500 font-mono placeholder:font-sans placeholder:text-slate-500"
-            />
-          </div>
-          {customAmount && (
-            <button
-              onClick={() => setCustomAmount('')}
-              className="px-2.5 py-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white text-xs font-medium cursor-pointer"
-            >
-              {t(appLanguage, 'clear_btn')}
-            </button>
-          )}
+        <div className="relative">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">₹</span>
+          <input
+            type="number"
+            value={customAmount}
+            onChange={(e) => setCustomAmount(e.target.value)}
+            placeholder={t(appLanguage, 'any_amount_placeholder')}
+            className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-purple-500"
+          />
         </div>
 
-        {/* Test Scan Button */}
         <button
-          onClick={handleSimulateCustomerPayment}
+          onClick={handleSimulatePayment}
           disabled={isSimulatingScan}
-          className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-md active:scale-[0.98]"
+          className="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-sm active:scale-[0.99]"
         >
-          <Sparkles className="w-3.5 h-3.5" />
+          <Sparkles className="w-3.5 h-3.5 text-purple-200" />
           <span>{t(appLanguage, 'simulate_scan')}</span>
         </button>
       </div>

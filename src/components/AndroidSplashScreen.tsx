@@ -42,7 +42,7 @@ export const AndroidSplashScreen: React.FC<AndroidSplashScreenProps> = ({ onFini
           Loudbox by Propel
         </span>
         <span className="text-[9px] text-slate-600 font-mono">
-          in.mysoundbox.app • v4.8
+          v4.8
         </span>
       </div>
     </div>

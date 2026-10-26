@@ -25,7 +25,7 @@ import {
   ReportTimeframe,
   UPI_APPS_CONFIG,
   UpiAppId,
-} from '../types/soundbox';
+} from '../types/loudbox';
 import {
   filterTransactionsForReport,
   generateQuickTextSummary,
@@ -46,6 +46,7 @@ interface CollectionReportModalProps {
   merchant: MerchantProfile;
   appLanguage?: AppLanguage;
   initialTimeframe?: ReportTimeframe;
+  initialSelectedApp?: UpiAppId | 'all';
 }
 
 export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
@@ -55,11 +56,19 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
   merchant,
   appLanguage = 'mr',
   initialTimeframe = 'weekly',
+  initialSelectedApp = 'all',
 }) => {
   const [timeframe, setTimeframe] = useState<ReportTimeframe>(initialTimeframe);
   const [includeSenderNames, setIncludeSenderNames] = useState<boolean>(true);
-  const [selectedApp, setSelectedApp] = useState<UpiAppId | 'all'>('all');
+  const [selectedApp, setSelectedApp] = useState<UpiAppId | 'all'>(initialSelectedApp);
   const [activeTab, setActiveTab] = useState<'transactions' | 'breakdown'>('transactions');
+
+  // Sync initialSelectedApp when modal opens or initialSelectedApp changes
+  React.useEffect(() => {
+    if (initialSelectedApp) {
+      setSelectedApp(initialSelectedApp);
+    }
+  }, [initialSelectedApp, isOpen]);
 
   // Custom date range state
   const defaultEndDate = new Date().toISOString().split('T')[0];
@@ -91,6 +100,28 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
   const { summary } = useMemo(() => {
     return filterTransactionsForReport(transactions, reportConfig);
   }, [transactions, reportConfig]);
+
+  // Compute base summary across all providers for provider filter pill totals
+  const timeframeAllProvidersSummary = useMemo(() => {
+    return filterTransactionsForReport(transactions, {
+      timeframe,
+      startDate: timeframe === 'daily' && isSpecificDailyDate ? singleDayDate : timeframe === 'custom' ? customStartDate : undefined,
+      endDate: timeframe === 'daily' && isSpecificDailyDate ? singleDayDate : timeframe === 'custom' ? customEndDate : undefined,
+      includeSenderNames,
+      selectedApp: 'all',
+    }).summary;
+  }, [transactions, timeframe, isSpecificDailyDate, singleDayDate, customStartDate, customEndDate, includeSenderNames]);
+
+  const providerOptions: { id: UpiAppId | 'all'; name: string; badge: string; bg: string }[] = [
+    { id: 'all', name: 'All Providers', badge: 'All', bg: 'bg-indigo-600' },
+    { id: 'gpay', name: 'Google Pay', badge: 'G', bg: 'bg-blue-600' },
+    { id: 'phonepe', name: 'PhonePe', badge: 'Ph', bg: 'bg-purple-600' },
+    { id: 'paytm', name: 'Paytm', badge: 'P', bg: 'bg-cyan-600' },
+    { id: 'bhim', name: 'BHIM UPI', badge: 'B', bg: 'bg-emerald-600' },
+    { id: 'amazonpay', name: 'Amazon Pay', badge: 'A', bg: 'bg-amber-600' },
+    { id: 'cred', name: 'Cred UPI', badge: 'Cr', bg: 'bg-zinc-700' },
+    { id: 'mobikwik', name: 'MobiKwik', badge: 'M', bg: 'bg-sky-600' },
+  ];
 
   if (!isOpen) return null;
 
@@ -153,7 +184,8 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
     const csvContent = generateCSVReport(summary, merchant, includeSenderNames);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const cleanDateStr = new Date().toISOString().split('T')[0];
-    const filename = `Statement-${summary.periodLabel.split(' ')[0]}-${cleanDateStr}.csv`;
+    const appTag = selectedApp !== 'all' ? `-${selectedApp}` : '';
+    const filename = `Statement-${summary.periodLabel.split(' ')[0]}${appTag}-${cleanDateStr}.csv`;
     triggerFileDownload(blob, filename);
     showToast(t(appLanguage, 'toast_csv_downloaded'));
   };
@@ -339,11 +371,84 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
             )}
           </div>
 
+          {/* PAYMENT PROVIDER FILTER */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-400 px-0.5">
+              <span>Filter by Payment App (पेमेंट अ‍ॅप)</span>
+              {selectedApp !== 'all' && (
+                <button
+                  onClick={() => setSelectedApp('all')}
+                  className="text-[11px] text-indigo-400 hover:text-indigo-300 transition cursor-pointer"
+                >
+                  Show All Apps
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar scroll-smooth">
+              {providerOptions.map((opt) => {
+                const isSelected = selectedApp === opt.id;
+                const stats = opt.id === 'all'
+                  ? { total: timeframeAllProvidersSummary.totalAmount, count: timeframeAllProvidersSummary.totalCount }
+                  : timeframeAllProvidersSummary.appBreakdown[opt.id] || { total: 0, count: 0 };
+                const hasData = stats.count > 0;
+
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => setSelectedApp(opt.id)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs shrink-0 transition cursor-pointer ${
+                      isSelected
+                        ? 'bg-indigo-600 text-white border-indigo-400 shadow-md font-medium'
+                        : hasData
+                        ? 'bg-slate-950/80 text-slate-200 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
+                        : 'bg-slate-950/40 text-slate-500 border-slate-800/60 opacity-60 hover:opacity-90'
+                    }`}
+                  >
+                    <span className={`w-4 h-4 rounded-md flex items-center justify-center font-bold text-[10px] text-white shrink-0 ${opt.bg}`}>
+                      {opt.badge}
+                    </span>
+                    <span className="font-medium whitespace-nowrap">{opt.name}</span>
+                    <span className={`font-mono text-[11px] tabular-nums ${isSelected ? 'text-indigo-100' : 'text-slate-400'}`}>
+                      ₹{stats.total.toLocaleString('en-IN')}
+                    </span>
+                    {stats.count > 0 && (
+                      <span className={`text-[10px] px-1 rounded font-mono ${isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                        {stats.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {selectedApp !== 'all' && (
+              <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-indigo-950/50 border border-indigo-500/30 text-[11px]">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0 animate-pulse" />
+                  <span className="text-indigo-200 truncate">
+                    Showing statement for <strong>{UPI_APPS_CONFIG[selectedApp]?.name || selectedApp}</strong> only
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSelectedApp('all')}
+                  className="text-indigo-400 hover:text-indigo-200 font-medium shrink-0 ml-2 cursor-pointer"
+                >
+                  Clear filter
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* MAIN SUMMARY STAT CARD */}
           <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3">
             <div className="flex items-start justify-between">
               <div>
-                <span className="text-xs text-slate-400 font-medium">{t(appLanguage, 'total_collections')}</span>
+                <span className="text-xs text-slate-400 font-medium">
+                  {selectedApp === 'all'
+                    ? t(appLanguage, 'total_collections')
+                    : `${UPI_APPS_CONFIG[selectedApp]?.name || selectedApp} ${t(appLanguage, 'total_collections')}`}
+                </span>
                 <div className="text-2xl sm:text-3xl font-extrabold font-mono tabular-nums text-white mt-0.5 tracking-tight">
                   ₹{summary.totalAmount.toLocaleString('en-IN')}
                 </div>
@@ -586,7 +691,13 @@ export const CollectionReportModal: React.FC<CollectionReportModalProps> = ({
             className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.99] cursor-pointer"
           >
             <Share2 className="w-4 h-4 text-white" />
-            <span>{isExportingPdf ? t(appLanguage, 'preparing_statement') : t(appLanguage, 'share_statement_btn')}</span>
+            <span>
+              {isExportingPdf
+                ? t(appLanguage, 'preparing_statement')
+                : selectedApp !== 'all'
+                ? `Share ${UPI_APPS_CONFIG[selectedApp]?.name || selectedApp} Statement`
+                : t(appLanguage, 'share_statement_btn')}
+            </span>
           </button>
 
           {/* SECONDARY ROW: UNIFIED ACTION GROUP */}

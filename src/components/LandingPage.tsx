@@ -18,7 +18,7 @@ import {
   Moon,
   Sparkles
 } from 'lucide-react';
-import { AudioSettings, announcePaymentAlert, SUPPORTED_LANGUAGES, playSoundboxChime } from '../utils/audioEngine';
+import { AudioSettings, announcePaymentAlert, SUPPORTED_LANGUAGES, playLoudboxChime } from '../utils/audioEngine';
 
 interface LandingPageProps {
   onOpenAndroidApp: () => void;
@@ -42,16 +42,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   const faqs = [
     {
-      q: 'How does Soundbox work for UPI payment alerts?',
-      a: 'Soundbox links with your UPI apps and announces payments instantly through voice alerts. Just install the app on your Android phone, enable notification access, and start getting real-time audio announcements for every incoming payment.',
+      q: 'How does Loudbox work for UPI payment alerts?',
+      a: 'Loudbox links with your UPI apps and announces payments instantly through voice alerts. Just install the app on your Android phone, enable notification access, and start getting real-time audio announcements for every incoming payment.',
     },
     {
       q: 'Which languages are available for voice notifications and app display?',
-      a: 'Soundbox supports 15 Indian languages: Marathi, Hindi, English, Hinglish, Gujarati, Punjabi, Tamil, Telugu, Kannada, Bengali, Malayalam, Odia, Assamese, Bhojpuri, and Rajasthani. You can choose both your App Display Language and your Voice Announcement Language during the first setup or switch anytime from settings.',
+      a: 'Loudbox supports 15 Indian languages: Marathi, Hindi, English, Hinglish, Gujarati, Punjabi, Tamil, Telugu, Kannada, Bengali, Malayalam, Odia, Assamese, Bhojpuri, and Rajasthani. You can choose both your App Display Language and your Voice Announcement Language during the first setup or switch anytime from settings.',
     },
     {
-      q: 'Is my payment information safe with Soundbox?',
-      a: 'Yes. Soundbox operates locally on your phone and follows strict security standards. Your financial information stays private on your handset and is never stored, sold, or shared with third parties.',
+      q: 'Is my payment information safe with Loudbox?',
+      a: 'Yes. Loudbox operates locally on your phone and follows strict security standards. Your financial information stays private on your handset and is never stored, sold, or shared with third parties.',
     },
     {
       q: 'What happens if I miss a voice alert?',
@@ -68,7 +68,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-[#09090b] text-zinc-100' : 'bg-[#f4f4f4] text-zinc-900'} transition-colors duration-300 font-sans selection:bg-purple-600 selection:text-white`}>
-      {/* Sticky Header matching mysoundbox.in */}
+      {/* Sticky Header matching loudbox.in */}
       <header className={`sticky top-0 z-50 backdrop-blur-xl border-b ${
         isDarkMode ? 'bg-zinc-950/85 border-zinc-800/80' : 'bg-white/85 border-zinc-200'
       }`}>
@@ -153,7 +153,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               className="py-3.5 px-8 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-base shadow-xl shadow-purple-600/30 flex items-center gap-2.5 transition active:scale-95 cursor-pointer"
             >
               <Smartphone className="w-5 h-5" />
-              <span>Launch Soundbox App</span>
+              <span>Launch Loudbox App</span>
             </button>
 
             <button
@@ -192,7 +192,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             Trusted by <span className="font-bold text-purple-400">1 crore+</span> merchants and shopkeepers!
           </p>
 
-          {/* Floating Payment Notification Badges matching mysoundbox.in */}
+          {/* Floating Payment Notification Badges matching loudbox.in */}
           <div className="mt-12 w-full grid grid-cols-2 sm:grid-cols-5 gap-3 max-w-4xl">
             {[
               { app: 'Google Pay', val: '+ ₹650', badge: 'G', color: 'bg-blue-600' },
@@ -232,7 +232,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               Who is it for
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">
-              Who Can Use Soundbox?
+              Who Can Use Loudbox?
             </h2>
             <p className="text-zinc-400 text-base mt-3">
               Built for all kinds of businesses across India that accept UPI payments.
@@ -434,10 +434,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               Reviews
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mt-2">
-              What Merchants Say About Soundbox
+              What Merchants Say About Loudbox
             </h2>
             <p className="text-zinc-400 text-base mt-3">
-              Real feedback from store owners using Soundbox every day.
+              Real feedback from store owners using Loudbox every day.
             </p>
           </div>
 
@@ -509,7 +509,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               Frequently Asked Questions
             </h2>
             <p className="text-zinc-400 text-base mt-3">
-              Quick answers to common questions about using Soundbox.
+              Quick answers to common questions about using Loudbox.
             </p>
           </div>
 
@@ -550,7 +550,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div>
               <span className="text-xs uppercase tracking-widest font-bold text-purple-300">Let's start now</span>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
-                Join merchants across India using Soundbox
+                Join merchants across India using Loudbox
               </h3>
               <p className="text-sm text-purple-200/80 mt-1">
                 Turn your Android phone into an instant voice payment announcer today.
@@ -596,18 +596,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </ul>
             </div>
             <div>
-              <h4 className="font-bold text-white mb-3">About Soundbox</h4>
+              <h4 className="font-bold text-white mb-3">About Loudbox</h4>
               <p className="text-xs text-zinc-400 leading-relaxed">
-                Soundbox is India's leading UPI payment notification platform for small businesses and merchants. Developed by RAHSOU SIMPLE VIRAL GAMES PRIVATE LIMITED.
+                Loudbox is India's leading UPI payment notification platform for small businesses and merchants. Developed by RAHSOU SIMPLE VIRAL GAMES PRIVATE LIMITED.
               </p>
-              <p className="text-xs text-zinc-500 mt-2 font-mono">care@mysoundbox.in</p>
+              <p className="text-xs text-zinc-500 mt-2 font-mono">care@loudbox.in</p>
             </div>
           </div>
 
           {/* Copyright */}
           <div className="border-t border-zinc-900 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-zinc-500 gap-2">
-            <span>© 2026 Soundbox (RAHSOU SIMPLE VIRAL GAMES PVT LTD). All rights reserved.</span>
-            <span>All-in-One Mobile UPI Soundbox for Android</span>
+            <span>© 2026 Loudbox (RAHSOU SIMPLE VIRAL GAMES PVT LTD). All rights reserved.</span>
+            <span>All-in-One Mobile UPI Loudbox for Android</span>
           </div>
         </div>
       </footer>

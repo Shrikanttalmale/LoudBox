@@ -1,6 +1,6 @@
 /**
- * Soundbox Audio & Voice Synthesis Engine
- * Generates UPI soundbox chimes using Web Audio API and produces
+ * Loudbox Audio & Voice Synthesis Engine
+ * Generates UPI loudbox chimes using Web Audio API and produces
  * multi-lingual voice announcements using SpeechSynthesis with authentic
  * regional grammar, number-to-words conversion, and phonetic cross-voice fallbacks.
  */
@@ -243,7 +243,7 @@ export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {
   selectedLanguage: 'mr',
   repeatAlert: false,
   voiceMode: 'auto',
-  voicePersonaId: undefined, // Normal standard soundbox voice
+  voicePersonaId: undefined, // Normal standard loudbox voice
   announceSenderName: true, // Default to ON for announcing payer name
 };
 
@@ -284,9 +284,16 @@ function getAudioContext(): AudioContext {
 }
 
 /**
- * Play authentic soundbox chime based on style
+ * Play authentic loudbox chime based on style
  */
 export async function playSoundboxChime(
+  style: AudioSettings['chimeStyle'] = 'paytm',
+  volume = 1.0
+): Promise<void> {
+  return playLoudboxChime(style, volume);
+}
+
+export async function playLoudboxChime(
   style: AudioSettings['chimeStyle'] = 'paytm',
   volume = 1.0
 ): Promise<void> {
@@ -298,7 +305,7 @@ export async function playSoundboxChime(
     masterGain.connect(ctx.destination);
 
     if (style === 'paytm') {
-      // Signature Paytm Soundbox 4-step chime: E5 -> G#5 -> B5 -> E6
+      // Signature Paytm Loudbox 4-step chime: E5 -> G#5 -> B5 -> E6
       const notes = [
         { freq: 659.25, start: 0.0, dur: 0.12 },
         { freq: 830.61, start: 0.13, dur: 0.12 },
@@ -573,8 +580,8 @@ export async function playCelebritySting(
       return new Promise((r) => setTimeout(r, 550));
     }
 
-    // Default to classic soundbox chime for other stings
-    return playSoundboxChime('paytm', volume);
+    // Default to classic loudbox chime for other stings
+    return playLoudboxChime('paytm', volume);
   } catch (err) {
     console.warn('Sting playback error:', err);
     return Promise.resolve();
@@ -1046,7 +1053,7 @@ export function formatRajasthaniPhoneticAmount(amount: number): string {
 ======================================================================= */
 
 /**
- * Build authentic spoken text for the soundbox alert.
+ * Build authentic spoken text for the loudbox alert.
  * Uses spaced tokens so speech synthesis engines pronounce app names and particles clearly.
  */
 export function buildSpokenText(
@@ -1066,7 +1073,7 @@ export function buildSpokenText(
 
   switch (langCode) {
     case 'mr': {
-      // Authentic Marathi Soundbox announcements
+      // Authentic Marathi Loudbox announcements
       const marathiApps: Record<UpiAppId, string> = {
         gpay: 'गूगल पे वर',
         phonepe: 'फोनपे वर',
@@ -1086,7 +1093,7 @@ export function buildSpokenText(
     }
 
     case 'hi': {
-      // Authentic Hindi Soundbox announcements
+      // Authentic Hindi Loudbox announcements
       const hindiApps: Record<UpiAppId, string> = {
         gpay: 'गूगल पे पर',
         phonepe: 'फ़ोन पे पर',
@@ -1122,7 +1129,7 @@ export function buildSpokenText(
     }
 
     case 'gu': {
-      // Authentic Gujarati Soundbox announcements
+      // Authentic Gujarati Loudbox announcements
       const gujApps: Record<UpiAppId, string> = {
         gpay: 'ગૂગલ પે પર',
         phonepe: 'ફોન પે પર',
@@ -1141,7 +1148,7 @@ export function buildSpokenText(
     }
 
     case 'pa': {
-      // Authentic Punjabi Soundbox announcements
+      // Authentic Punjabi Loudbox announcements
       const punjApps: Record<UpiAppId, string> = {
         gpay: 'ਗੂਗਲ ਪੇ ਤੇ',
         phonepe: 'ਫੋਨ ਪੇ ਤੇ',
@@ -1160,7 +1167,7 @@ export function buildSpokenText(
     }
 
     case 'bn': {
-      // Authentic Bengali Soundbox announcements
+      // Authentic Bengali Loudbox announcements
       const bengApps: Record<UpiAppId, string> = {
         gpay: 'গুগল পে তে',
         phonepe: 'ফোনপে তে',
@@ -1179,7 +1186,7 @@ export function buildSpokenText(
     }
 
     case 'ta': {
-      // Authentic Tamil Soundbox announcements
+      // Authentic Tamil Loudbox announcements
       const tamApps: Record<UpiAppId, string> = {
         gpay: 'கூகிள் பே மூலம்',
         phonepe: 'போன்பே மூலம்',
@@ -1198,7 +1205,7 @@ export function buildSpokenText(
     }
 
     case 'te': {
-      // Authentic Telugu Soundbox announcements
+      // Authentic Telugu Loudbox announcements
       const telApps: Record<UpiAppId, string> = {
         gpay: 'గూగుల్ పే లో',
         phonepe: 'ఫోన్‌పే లో',
@@ -1217,7 +1224,7 @@ export function buildSpokenText(
     }
 
     case 'kn': {
-      // Authentic Kannada Soundbox announcements
+      // Authentic Kannada Loudbox announcements
       const kanApps: Record<UpiAppId, string> = {
         gpay: 'ಗೂಗಲ್ ಪೇ ನಲ್ಲಿ',
         phonepe: 'ಫೋನ್ ಪೇ ನಲ್ಲಿ',
@@ -1236,7 +1243,7 @@ export function buildSpokenText(
     }
 
     case 'ml': {
-      // Authentic Malayalam Soundbox announcements
+      // Authentic Malayalam Loudbox announcements
       const mlApps: Record<UpiAppId, string> = {
         gpay: 'ഗൂഗിൾ പേ വഴി',
         phonepe: 'ഫോൺപേ വഴി',
@@ -1255,7 +1262,7 @@ export function buildSpokenText(
     }
 
     case 'or': {
-      // Authentic Odia Soundbox announcements
+      // Authentic Odia Loudbox announcements
       const orApps: Record<UpiAppId, string> = {
         gpay: 'ଗୁଗଲ୍ ପେ ରେ',
         phonepe: 'ଫୋନ୍ ପେ ରେ',
@@ -1274,7 +1281,7 @@ export function buildSpokenText(
     }
 
     case 'as': {
-      // Authentic Assamese Soundbox announcements
+      // Authentic Assamese Loudbox announcements
       const asApps: Record<UpiAppId, string> = {
         gpay: 'গুগল পে ত',
         phonepe: 'ফোনপে ত',
@@ -1293,7 +1300,7 @@ export function buildSpokenText(
     }
 
     case 'bho': {
-      // Authentic Bhojpuri Soundbox announcements
+      // Authentic Bhojpuri Loudbox announcements
       const bhoApps: Record<UpiAppId, string> = {
         gpay: 'गूगल पे पर',
         phonepe: 'फ़ोनपे पर',
@@ -1312,7 +1319,7 @@ export function buildSpokenText(
     }
 
     case 'raj': {
-      // Authentic Rajasthani Soundbox announcements
+      // Authentic Rajasthani Loudbox announcements
       const rajApps: Record<UpiAppId, string> = {
         gpay: 'गूगल पे माथे',
         phonepe: 'फ़ोनपे माथे',
@@ -1858,7 +1865,7 @@ export async function announcePaymentAlert(
   if (persona && persona.audioSting) {
     await playCelebritySting(persona.audioSting, settings.volume);
   } else {
-    await playSoundboxChime(settings.chimeStyle, settings.volume);
+    await playLoudboxChime(settings.chimeStyle, settings.volume);
   }
 
   // Step 2: Try High-Fidelity Studio-Quality Native Voice Stream first with exact Celebrity persona

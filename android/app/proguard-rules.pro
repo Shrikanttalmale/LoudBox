@@ -8,7 +8,9 @@
     @android.webkit.JavascriptInterface <methods>;
 }
 
-# Keep Soundbox Native Services & Activities
+# Keep Loudbox Native Services & Activities
+-keep class in.loudbox.app.** { *; }
+-keepclassmembers class in.loudbox.app.** { *; }
 -keep class in.mysoundbox.app.** { *; }
 -keepclassmembers class in.mysoundbox.app.** { *; }
 

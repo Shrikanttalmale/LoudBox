@@ -33,7 +33,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
-        <!-- Native Soundbox Background Notification Service (Runs 24/7 even when closed) -->
+        <!-- Native Loudbox Background Notification Service (Runs 24/7 even when closed) -->
         <service
             android:name=".SoundboxNotificationListenerService"
             android:label="Loudbox UPI Payment Alert Service"
