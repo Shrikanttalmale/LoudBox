@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'in.loudbox.app',
+  appId: 'com.zing.loudbox',
   appName: 'Loudbox',
   webDir: 'dist',
   server: {

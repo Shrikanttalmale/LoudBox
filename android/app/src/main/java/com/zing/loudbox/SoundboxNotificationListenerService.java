@@ -1,4 +1,4 @@
-package in.mysoundbox.app;
+package com.zing.loudbox;
 
 import android.app.Notification;
 import android.app.NotificationChannel;

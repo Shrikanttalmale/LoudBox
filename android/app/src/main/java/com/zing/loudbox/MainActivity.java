@@ -1,4 +1,4 @@
-package in.mysoundbox.app;
+package com.zing.loudbox;
 
 import android.content.ComponentName;
 import android.content.Intent;

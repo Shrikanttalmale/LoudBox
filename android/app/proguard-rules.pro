@@ -9,6 +9,8 @@
 }
 
 # Keep Loudbox Native Services & Activities
+-keep class com.zing.loudbox.** { *; }
+-keepclassmembers class com.zing.loudbox.** { *; }
 -keep class in.loudbox.app.** { *; }
 -keepclassmembers class in.loudbox.app.** { *; }
 -keep class in.mysoundbox.app.** { *; }
