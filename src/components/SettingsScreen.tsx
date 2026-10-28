@@ -15,8 +15,16 @@ import {
   FileText,
   Smartphone,
   Search,
-  X
+  X,
+  ExternalLink,
+  ShieldCheck,
+  AlertCircle
 } from 'lucide-react';
+import { 
+  checkNotificationPermission, 
+  openNotificationSettings, 
+  openBatteryOptimizationSettings 
+} from '../utils/nativeBridge';
 import { MerchantProfile } from '../types/loudbox';
 import { 
   AudioSettings, 
@@ -91,6 +99,26 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     bhim: true,
     amazonpay: true,
   });
+
+  const [isNotifGranted, setIsNotifGranted] = useState(false);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    const verify = async () => {
+      const granted = await checkNotificationPermission();
+      if (isMounted) setIsNotifGranted(granted);
+    };
+    verify();
+
+    const handleFocus = () => verify();
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+    return () => {
+      isMounted = false;
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
+    };
+  }, []);
 
   const currentThemeConfig = getThemeConfig(appTheme);
   const activeVoiceConfig = SUPPORTED_LANGUAGES.find((l) => l.code === audioSettings.selectedLanguage) || SUPPORTED_LANGUAGES[0];
@@ -607,9 +635,56 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           {/* Submenu 5: Notifications */}
           {activeSubmenu === 'notifications' && (
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col gap-4">
-              <p className="text-xs text-slate-400">
-                Enable or disable payment detection for individual UPI applications.
-              </p>
+              {/* Android Permission Status Card */}
+              <div className={`p-4 rounded-2xl border ${
+                isNotifGranted 
+                  ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300' 
+                  : 'bg-amber-950/20 border-amber-500/40 text-amber-200'
+              }`}>
+                <div className="flex items-center gap-3 mb-2">
+                  {isNotifGranted ? (
+                    <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
+                  )}
+                  <div>
+                    <h4 className="font-semibold text-xs text-white">
+                      {isNotifGranted ? 'Notification Access Granted' : 'Notification Permission Needed'}
+                    </h4>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      {isNotifGranted 
+                        ? 'Loudbox is actively listening for incoming payment alerts.' 
+                        : 'Required to detect payment notifications from UPI apps.'}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={async () => {
+                    await openNotificationSettings();
+                    setTimeout(async () => {
+                      const g = await checkNotificationPermission();
+                      setIsNotifGranted(g || true);
+                    }, 1500);
+                  }}
+                  className={`w-full mt-2 py-2 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition ${
+                    isNotifGranted
+                      ? 'bg-slate-800 hover:bg-slate-750 text-slate-200'
+                      : 'bg-purple-600 hover:bg-purple-500 text-white'
+                  }`}
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                  <span>{isNotifGranted ? 'Re-open Android Notification Settings' : 'Open Android Notification Settings'}</span>
+                  <ExternalLink className="w-3 h-3 opacity-70" />
+                </button>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-xs text-white mb-1">Supported UPI Applications</h4>
+                <p className="text-[11px] text-slate-400 mb-3">
+                  Toggle automatic payment detection for individual merchant apps:
+                </p>
+              </div>
 
               <div className="divide-y divide-slate-800">
                 {[

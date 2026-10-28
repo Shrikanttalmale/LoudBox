@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Volume2, 
   Store, 
   Smartphone, 
   ArrowRight,
-  Radio
+  Radio,
+  Bell,
+  BellOff,
+  ExternalLink,
+  X
 } from 'lucide-react';
 import { Transaction, MerchantProfile, UPI_APPS_CONFIG } from '../types/loudbox';
 import { 
@@ -15,6 +19,7 @@ import {
   playLoudboxChime 
 } from '../utils/audioEngine';
 import { AppLanguage, t } from '../utils/i18n';
+import { checkNotificationPermission, openNotificationSettings } from '../utils/nativeBridge';
 
 export interface LoudboxCounterScreenProps {
   merchant: MerchantProfile;
@@ -74,6 +79,27 @@ export const LoudboxCounterScreen: React.FC<LoudboxCounterScreenProps> = ({
   const todayTransactions = transactions.filter(tx => tx.timestamp >= todayStart);
   const todayTotal = todayTransactions.reduce((sum, tx) => sum + tx.amount, 0);
 
+  const [isNotifGranted, setIsNotifGranted] = useState(true);
+  const [isBannerDismissed, setIsBannerDismissed] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const verify = async () => {
+      const granted = await checkNotificationPermission();
+      if (mounted) setIsNotifGranted(granted);
+    };
+    verify();
+
+    const handleFocus = () => verify();
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+    return () => {
+      mounted = false;
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
+    };
+  }, []);
+
   const activeLangConfig = SUPPORTED_LANGUAGES.find(l => l.code === audioSettings.selectedLanguage) || SUPPORTED_LANGUAGES[0];
 
   return (
@@ -98,6 +124,43 @@ export const LoudboxCounterScreen: React.FC<LoudboxCounterScreenProps> = ({
           <span>{t(appLanguage, 'show_qr')}</span>
         </button>
       </div>
+
+      {/* Optional Soft Warning Banner if Notification Access is not yet enabled */}
+      {!isNotifGranted && !isBannerDismissed && (
+        <div className="bg-amber-950/40 border border-amber-500/40 rounded-2xl p-3 flex items-center justify-between gap-3 animate-in fade-in duration-200">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <BellOff className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-amber-200 truncate">Auto-alerts are paused</p>
+              <p className="text-[11px] text-amber-300/80 truncate">Enable notification access for automatic UPI announcements</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={async () => {
+                await openNotificationSettings();
+                const granted = await checkNotificationPermission();
+                if (granted) {
+                  setIsNotifGranted(true);
+                  playLoudboxChime();
+                }
+              }}
+              className="px-2.5 py-1 bg-amber-500 text-amber-950 font-bold rounded-lg text-xs hover:bg-amber-400 transition cursor-pointer"
+            >
+              Enable
+            </button>
+            <button
+              onClick={() => setIsBannerDismissed(true)}
+              className="p-1 text-amber-400 hover:text-amber-200 cursor-pointer"
+              title="Dismiss"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Live Spoken Announcement Overlay */}
       {activeAnnouncementText && (

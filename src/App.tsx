@@ -25,13 +25,14 @@ import {
 } from './utils/audioEngine';
 import { AppLanguage, SUPPORTED_APP_LANGUAGES } from './utils/i18n';
 import { AppThemeId, DEFAULT_THEME_ID } from './utils/themeEngine';
+import { isMobileDevice, isNativePlatform, isStandaloneApp } from './utils/nativeBridge';
 import { Download, Smartphone, X, Volume2 } from 'lucide-react';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<'android-app' | 'website'>('android-app');
   
-  // App Lifecycle Stages: 'home-screen' -> 'splash' -> 'onboarding' -> 'active-app'
-  const [appStage, setAppStage] = useState<'home-screen' | 'splash' | 'onboarding' | 'active-app'>('home-screen');
+  // App Lifecycle Stages: 'splash' -> 'onboarding' (if new) -> 'active-app'
+  const [appStage, setAppStage] = useState<'home-screen' | 'splash' | 'onboarding' | 'active-app'>('splash');
   
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(() => {
     try {
@@ -236,7 +237,7 @@ export default function App() {
       className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-purple-600 selection:text-white"
     >
       {/* Optional Android PWA Install Banner */}
-      {showInstallBanner && (
+      {showInstallBanner && !isNativePlatform() && !isStandaloneApp() && (
         <div className="bg-gradient-to-r from-purple-700 to-indigo-700 text-white px-4 py-2 text-xs flex items-center justify-between z-50">
           <div className="flex items-center gap-2">
             <Smartphone className="w-4 h-4 text-purple-200" />
