@@ -37,17 +37,25 @@ jobs:
       - name: Grant Execute Permission for Gradlew
         run: chmod +x android/gradlew
 
-      - name: Create Upload Signing Keystore
+      - name: Ensure Upload Signing Keystore & Export PEM Certificate
         run: |
-          keytool -genkeypair -v \
+          if [ ! -f android/app/upload-keystore.jks ]; then
+            keytool -genkeypair -v \
+              -keystore android/app/upload-keystore.jks \
+              -alias upload \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass "loudbox@123" \
+              -keypass "loudbox@123" \
+              -dname "CN=Loudbox, OU=Android, O=Loudbox, L=Bengaluru, ST=Karnataka, C=IN"
+          fi
+          # Export public certificate for Google Play Console App Signing / Key Reset
+          keytool -export -rfc \
             -keystore android/app/upload-keystore.jks \
             -alias upload \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -storepass "loudbox@123" \
-            -keypass "loudbox@123" \
-            -dname "CN=Loudbox, OU=Android, O=Loudbox, L=Bengaluru, ST=Karnataka, C=IN"
+            -file android/app/upload_certificate.pem \
+            -storepass "loudbox@123"
 
       - name: Build Android Debug APK (For Immediate Physical Device Testing)
         run: |
@@ -84,3 +92,9 @@ jobs:
         with:
           name: Loudbox-Upload-Keystore
           path: android/app/upload-keystore.jks
+
+      - name: Upload Play Console PEM Certificate Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Loudbox-PlayConsole-PEM-Certificate
+          path: android/app/upload_certificate.pem
