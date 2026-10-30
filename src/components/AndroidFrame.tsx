@@ -27,6 +27,7 @@ import {
   getThemeConfig 
 } from '../utils/themeEngine';
 import { isMobileDevice } from '../utils/nativeBridge';
+import { pushBackHandler } from '../utils/backButtonManager';
 
 interface AndroidFrameProps {
   children: React.ReactNode;
@@ -64,6 +65,25 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
   const [isFramedView, setIsFramedView] = useState(!isMobileDevice());
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [showThemeDropdown, setShowThemeDropdown] = useState(false);
+
+  // Close open dropdowns on back button
+  useEffect(() => {
+    if (showLangDropdown) {
+      return pushBackHandler(() => {
+        setShowLangDropdown(false);
+        return true;
+      });
+    }
+  }, [showLangDropdown]);
+
+  useEffect(() => {
+    if (showThemeDropdown) {
+      return pushBackHandler(() => {
+        setShowThemeDropdown(false);
+        return true;
+      });
+    }
+  }, [showThemeDropdown]);
 
   const currentThemeConfig = getThemeConfig(appTheme);
 

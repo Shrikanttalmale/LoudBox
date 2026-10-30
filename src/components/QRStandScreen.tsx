@@ -4,7 +4,8 @@ import {
   Copy, 
   Check, 
   Sparkles,
-  QrCode as QrIcon
+  QrCode as QrIcon,
+  ArrowLeft
 } from 'lucide-react';
 import { MerchantProfile, Transaction } from '../types/loudbox';
 import { AudioSettings, announcePaymentAlert, unlockAudioContext } from '../utils/audioEngine';
@@ -16,6 +17,7 @@ interface QRStandScreenProps {
   audioSettings: AudioSettings;
   setIsSpeaking: (speaking: boolean) => void;
   appLanguage?: AppLanguage;
+  onBack?: () => void;
 }
 
 export const QRStandScreen: React.FC<QRStandScreenProps> = ({
@@ -24,6 +26,7 @@ export const QRStandScreen: React.FC<QRStandScreenProps> = ({
   audioSettings,
   setIsSpeaking,
   appLanguage = 'mr',
+  onBack,
 }) => {
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
   const [customAmount, setCustomAmount] = useState<string>('');
@@ -78,9 +81,21 @@ export const QRStandScreen: React.FC<QRStandScreenProps> = ({
   return (
     <div className="flex flex-col gap-5 p-5 text-slate-100">
       {/* Header */}
-      <div>
-        <h2 className="font-semibold text-base text-white tracking-tight">{t(appLanguage, 'tab_qrstand')}</h2>
-        <p className="text-xs text-slate-400 mt-0.5">Display on your counter for customer scans</p>
+      <div className="flex items-center gap-2.5">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="p-1.5 -ml-1 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-xl transition cursor-pointer"
+            title="Back to Loudbox"
+            aria-label="Back to Loudbox"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </button>
+        )}
+        <div>
+          <h2 className="font-semibold text-base text-white tracking-tight">{t(appLanguage, 'tab_qrstand')}</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Display on your counter for customer scans</p>
+        </div>
       </div>
 
       {/* Clean Physical-Style QR Counter Card */}

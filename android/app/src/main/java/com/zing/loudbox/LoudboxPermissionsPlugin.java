@@ -17,6 +17,35 @@ import java.util.Set;
 public class LoudboxPermissionsPlugin extends Plugin {
 
     @PluginMethod
+    public void speakText(PluginCall call) {
+        String text = call.getString("text", "");
+        String lang = call.getString("lang", "hi-IN");
+        Double rateObj = call.getDouble("rate", 1.0);
+        Double pitchObj = call.getDouble("pitch", 1.0);
+        float rate = rateObj != null ? rateObj.floatValue() : 1.0f;
+        float pitch = pitchObj != null ? pitchObj.floatValue() : 1.0f;
+
+        JSObject ret = new JSObject();
+        if (getActivity() instanceof MainActivity) {
+            boolean ok = ((MainActivity) getActivity()).speakNative(text, lang, rate, pitch);
+            ret.put("success", ok);
+        } else {
+            ret.put("success", false);
+        }
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void stopSpeaking(PluginCall call) {
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).stopNativeTTS();
+        }
+        JSObject ret = new JSObject();
+        ret.put("success", true);
+        call.resolve(ret);
+    }
+
+    @PluginMethod
     public void checkNotificationPermission(PluginCall call) {
         JSObject ret = new JSObject();
         try {

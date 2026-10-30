@@ -132,3 +132,68 @@ export async function openBatteryOptimizationSettings(): Promise<boolean> {
   }
   return false;
 }
+
+/**
+ * Speak text natively on Android using OS TextToSpeech engine.
+ * Works 100% offline, requires no network/backend server, and does not depend on WebView speechSynthesis.
+ */
+export async function nativeSpeak(
+  text: string,
+  langCode: string,
+  rate = 1.0,
+  pitch = 1.0
+): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
+
+  // 1. Direct WebView JavascriptInterface (Fastest & most direct)
+  if ((window as any).LoudboxAndroid?.speakText) {
+    try {
+      const ok = Boolean((window as any).LoudboxAndroid.speakText(text, langCode, rate, pitch));
+      if (ok) return true;
+    } catch (e) {
+      console.warn('LoudboxAndroid.speakText error:', e);
+    }
+  }
+
+  // 2. Capacitor Plugin
+  const capPlugins = (window as any).Capacitor?.Plugins;
+  if (capPlugins?.LoudboxPermissions?.speakText) {
+    try {
+      const res = await capPlugins.LoudboxPermissions.speakText({
+        text,
+        lang: langCode,
+        rate,
+        pitch,
+      });
+      if (res?.success) return true;
+    } catch (e) {
+      console.warn('Capacitor LoudboxPermissions.speakText error:', e);
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Stop any ongoing native Android TTS playback
+ */
+export function stopNativeSpeaking(): void {
+  if (typeof window === 'undefined') return;
+
+  if ((window as any).LoudboxAndroid?.stopSpeaking) {
+    try {
+      (window as any).LoudboxAndroid.stopSpeaking();
+    } catch (e) {
+      console.warn('LoudboxAndroid.stopSpeaking error:', e);
+    }
+  }
+
+  const capPlugins = (window as any).Capacitor?.Plugins;
+  if (capPlugins?.LoudboxPermissions?.stopSpeaking) {
+    try {
+      capPlugins.LoudboxPermissions.stopSpeaking();
+    } catch (e) {
+      console.warn('Capacitor stopSpeaking error:', e);
+    }
+  }
+}

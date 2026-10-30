@@ -26,6 +26,11 @@ import {
 import { AppLanguage, SUPPORTED_APP_LANGUAGES } from './utils/i18n';
 import { AppThemeId, DEFAULT_THEME_ID } from './utils/themeEngine';
 import { isMobileDevice, isNativePlatform, isStandaloneApp } from './utils/nativeBridge';
+import { 
+  initializeBackButtonListener, 
+  pushBackHandler, 
+  registerExitToastCallback 
+} from './utils/backButtonManager';
 import { Download, Smartphone, X, Volume2 } from 'lucide-react';
 
 export default function App() {
@@ -104,6 +109,49 @@ export default function App() {
   const [activeAnnouncementText, setActiveAnnouncementText] = useState<string | null>(null);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState<boolean>(false);
+  const [showExitToast, setShowExitToast] = useState<boolean>(false);
+
+  // Initialize mobile Android and web popstate back button listener
+  useEffect(() => {
+    registerExitToastCallback(setShowExitToast);
+    const cleanup = initializeBackButtonListener();
+    return () => cleanup();
+  }, []);
+
+  // Back button: Return from Website view to Android App view
+  useEffect(() => {
+    if (currentView === 'website') {
+      return pushBackHandler(() => {
+        setCurrentView('android-app');
+        return true;
+      });
+    }
+  }, [currentView]);
+
+  // Back button: Return from Statement/Collections, QR Stand, or Settings to Loudbox Counter
+  useEffect(() => {
+    if (
+      currentView === 'android-app' &&
+      appStage === 'active-app' &&
+      activeTab !== 'loudbox' &&
+      activeTab !== 'soundbox'
+    ) {
+      return pushBackHandler(() => {
+        setActiveTab('loudbox');
+        return true;
+      });
+    }
+  }, [currentView, appStage, activeTab]);
+
+  // Back button: Return from Onboarding wizard to Active App if already onboarded
+  useEffect(() => {
+    if (appStage === 'onboarding' && hasCompletedOnboarding) {
+      return pushBackHandler(() => {
+        setAppStage('active-app');
+        return true;
+      });
+    }
+  }, [appStage, hasCompletedOnboarding]);
 
   useEffect(() => {
     try {
@@ -348,6 +396,7 @@ export default function App() {
                   audioSettings={audioSettings}
                   setIsSpeaking={setIsSpeaking}
                   appLanguage={appLanguage}
+                  onBack={() => setActiveTab('loudbox')}
                 />
               )}
 
@@ -358,6 +407,7 @@ export default function App() {
                   audioSettings={audioSettings}
                   setIsSpeaking={setIsSpeaking}
                   appLanguage={appLanguage}
+                  onBack={() => setActiveTab('loudbox')}
                 />
               )}
 
@@ -372,11 +422,20 @@ export default function App() {
                   setAppLanguage={setAppLanguage}
                   appTheme={appTheme}
                   setAppTheme={setAppTheme}
+                  onBack={() => setActiveTab('loudbox')}
                 />
               )}
             </>
           )}
         </AndroidFrame>
+      )}
+
+      {/* Android Exit Confirmation Toast */}
+      {showExitToast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border border-slate-700 text-slate-100 text-xs px-4 py-2 rounded-full shadow-2xl backdrop-blur-md animate-in fade-in duration-150 flex items-center gap-2 pointer-events-none">
+          <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+          <span className="font-medium">Press back again to exit</span>
+        </div>
       )}
     </div>
   );

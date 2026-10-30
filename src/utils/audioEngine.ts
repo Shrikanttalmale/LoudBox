@@ -6,6 +6,7 @@
  */
 
 import { getPersonaById } from './celebrityVoices';
+import { isNativePlatform, nativeSpeak } from './nativeBridge';
 
 export type UpiAppId = 'gpay' | 'phonepe' | 'paytm' | 'bhim' | 'amazonpay' | 'cred' | 'mobikwik';
 
@@ -1639,11 +1640,16 @@ export async function playHighFidelityVoice(
 ): Promise<boolean> {
   if (typeof window === 'undefined') return false;
 
+  // On Android APK, there is no Node/Express server on localhost.
+  // Native Android TTS is used directly instead.
+  if (isNativePlatform()) {
+    return false;
+  }
+
   const cleanText = text.trim();
   const selectedVoice = voiceName || (gender === 'female' ? 'Aoede' : 'Fenrir');
   const cacheKey = `${personaId || selectedVoice}_${lang}_${cleanText}`;
 
-  // Method 1: Web Audio API Buffer Playback (Bypasses HTML5 Media Autoplay restrictions)
   try {
     const ctx = getAudioContext();
     if (ctx.state === 'suspended') {
@@ -1662,9 +1668,18 @@ export async function playHighFidelityVoice(
         gender: gender || 'male',
       });
 
-      const response = await fetch(`/api/tts?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error(`TTS server responded with ${response.status}`);
+      // Quick 2-second timeout to avoid any delayed speech alert
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2000);
+
+      const response = await fetch(`/api/tts?${params.toString()}`, {
+        signal: controller.signal,
+      }).catch(() => null);
+
+      clearTimeout(timer);
+
+      if (!response || !response.ok) {
+        return false;
       }
 
       const arrayBuffer = await response.arrayBuffer();
@@ -1706,63 +1721,10 @@ export async function playHighFidelityVoice(
       });
     }
   } catch (webAudioErr) {
-    console.warn('Web Audio buffer fetch/decode failed, trying HTML5 Audio fallback:', webAudioErr);
+    console.warn('High fidelity voice stream unavailable:', webAudioErr);
   }
 
-  // Method 2: HTML5 Audio fallback
-  return new Promise((resolve) => {
-    try {
-      const params = new URLSearchParams({
-        text: cleanText,
-        lang,
-        voiceName: selectedVoice,
-        personaId: personaId || '',
-        style: voiceStyle || '',
-        gender: gender || 'male',
-      });
-      const audio = new Audio(`/api/tts?${params.toString()}`);
-      audio.volume = Math.max(0.1, Math.min(1.0, volume));
-      audio.playbackRate = Math.max(0.75, Math.min(1.5, rate));
-
-      let resolved = false;
-      const timer = setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          audio.pause();
-          resolve(false);
-        }
-      }, 9000);
-
-      audio.onended = () => {
-        if (!resolved) {
-          resolved = true;
-          clearTimeout(timer);
-          resolve(true);
-        }
-      };
-
-      audio.onerror = () => {
-        if (!resolved) {
-          resolved = true;
-          clearTimeout(timer);
-          resolve(false);
-        }
-      };
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          if (!resolved) {
-            resolved = true;
-            clearTimeout(timer);
-            resolve(false);
-          }
-        });
-      }
-    } catch {
-      resolve(false);
-    }
-  });
+  return false;
 }
 
 export function getCleanAppName(appId: UpiAppId): string {
@@ -1875,6 +1837,23 @@ export async function announcePaymentAlert(
     ? 'hi'
     : settings.selectedLanguage;
 
+  // Step 2: Native Android OS TextToSpeech (100% offline, zero network delay, runs inside APK)
+  if (isNativePlatform()) {
+    try {
+      const nativeSpoken = await nativeSpeak(fullSpokenText, ttsLang, speechRate, speechPitch);
+      if (nativeSpoken) {
+        // Keep visual announcement banner active for ~2.8s while native TTS speaks
+        await new Promise((r) => setTimeout(r, 2800));
+        onSpeechStateChange?.(false);
+        onAnnouncementText?.(null);
+        return;
+      }
+    } catch (nativeErr) {
+      console.warn('Native speak failed, falling back to web synthesis:', nativeErr);
+    }
+  }
+
+  // Step 3: High-Fidelity Studio-Quality Native Voice Stream (Gemini TTS via server proxy)
   const playedNativeStream = await playHighFidelityVoice(
     fullSpokenText,
     ttsLang,
@@ -1892,19 +1871,16 @@ export async function announcePaymentAlert(
     return;
   }
 
-  // Step 3: Offline fallback to local SpeechSynthesis if network was unavailable
+  // Step 4: Web Browser SpeechSynthesis
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     setTimeout(() => {
       onSpeechStateChange?.(false);
       onAnnouncementText?.(null);
-    }, 2000);
+    }, 1500);
     return;
   }
 
-  // Cancel any lingering utterance
-  window.speechSynthesis.cancel();
-
-  // Resolve best voice and text
+  // Resolve best voice and text (selects phonetic transliteration if only English system voice exists)
   const match = resolveBestVoiceForAlert(
     amount,
     appId,
@@ -1913,10 +1889,16 @@ export async function announcePaymentAlert(
     settings.preferredVoiceUri
   );
 
-
-  let finalSpokenText = fullSpokenText;
+  let finalSpokenText = match.textToSpeak;
   if (settings.voiceMode === 'phonetic') {
     finalSpokenText = phoneticGuide;
+  } else if (settings.voiceMode === 'native') {
+    finalSpokenText = fullSpokenText;
+  }
+
+  // Resume synthesis if paused (common mobile Chromium bug)
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
   }
 
   const utterance = new SpeechSynthesisUtterance(finalSpokenText);
@@ -1940,7 +1922,7 @@ export async function announcePaymentAlert(
         onAnnouncementText?.(null);
         resolve();
       }
-    }, 8000);
+    }, 6000);
 
     utterance.onend = () => {
       if (!resolved) {
@@ -1963,7 +1945,18 @@ export async function announcePaymentAlert(
       }
     };
 
-    window.speechSynthesis.speak(utterance);
+    try {
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn('speechSynthesis.speak exception:', e);
+      if (!resolved) {
+        resolved = true;
+        clearTimeout(timer);
+        onSpeechStateChange?.(false);
+        onAnnouncementText?.(null);
+        resolve();
+      }
+    }
   });
 }
 

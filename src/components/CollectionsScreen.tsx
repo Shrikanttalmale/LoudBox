@@ -10,7 +10,8 @@ import {
   Share2,
   ChevronDown,
   ChevronUp,
-  BarChart2
+  BarChart2,
+  ArrowLeft
 } from 'lucide-react';
 import { 
   Transaction, 
@@ -22,6 +23,7 @@ import { AudioSettings, announcePaymentAlert, unlockAudioContext } from '../util
 import { AppLanguage, t } from '../utils/i18n';
 import { CollectionReportModal } from './CollectionReportModal';
 import { formatCustomerName } from '../utils/reportEngine';
+import { pushBackHandler } from '../utils/backButtonManager';
 
 const DailyRevenueChart = React.lazy(() =>
   import('./DailyRevenueChart').then((m) => ({ default: m.DailyRevenueChart }))
@@ -34,6 +36,7 @@ interface CollectionsScreenProps {
   setIsSpeaking: (speaking: boolean) => void;
   appLanguage?: AppLanguage;
   initialProvider?: UpiAppId | 'all';
+  onBack?: () => void;
 }
 
 interface ProviderFilterItem {
@@ -61,6 +64,7 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
   setIsSpeaking,
   appLanguage = 'mr',
   initialProvider = 'all',
+  onBack,
 }) => {
   const [activeTab, setActiveTab] = useState<'Daily' | 'Weekly' | 'Monthly' | 'All'>('Daily');
   const [selectedProvider, setSelectedProvider] = useState<UpiAppId | 'all'>(initialProvider);
@@ -69,6 +73,36 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
   const [hideSenderNames, setHideSenderNames] = useState<boolean>(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
   const [showChart, setShowChart] = useState<boolean>(false);
+
+  // Mobile Back Button: Close Report Modal if open
+  React.useEffect(() => {
+    if (isReportModalOpen) {
+      return pushBackHandler(() => {
+        setIsReportModalOpen(false);
+        return true;
+      });
+    }
+  }, [isReportModalOpen]);
+
+  // Mobile Back Button: Close Revenue Chart if open
+  React.useEffect(() => {
+    if (showChart) {
+      return pushBackHandler(() => {
+        setShowChart(false);
+        return true;
+      });
+    }
+  }, [showChart]);
+
+  // Mobile Back Button: Clear search query if active
+  React.useEffect(() => {
+    if (searchQuery.trim().length > 0) {
+      return pushBackHandler(() => {
+        setSearchQuery('');
+        return true;
+      });
+    }
+  }, [searchQuery]);
 
   // Timeframe transactions
   const timeframeTransactions = useMemo(() => {
@@ -195,9 +229,21 @@ export const CollectionsScreen: React.FC<CollectionsScreenProps> = ({
     <div className="flex flex-col gap-4 p-4 text-slate-100 max-w-lg mx-auto w-full">
       {/* 1. CLEAN HEADER */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-bold text-base text-white tracking-tight">{t(appLanguage, 'tab_collections')}</h2>
-          <p className="text-xs text-slate-400 mt-0.5">{merchant.businessName}</p>
+        <div className="flex items-center gap-2.5">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="p-1.5 -ml-1 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-xl transition cursor-pointer"
+              title="Back to Loudbox"
+              aria-label="Back to Loudbox"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
+          <div>
+            <h2 className="font-bold text-base text-white tracking-tight">{t(appLanguage, 'tab_collections')}</h2>
+            <p className="text-xs text-slate-400 mt-0.5">{merchant.businessName}</p>
+          </div>
         </div>
 
         <button

@@ -47,6 +47,7 @@ import {
   APP_THEMES, 
   getThemeConfig 
 } from '../utils/themeEngine';
+import { pushBackHandler } from '../utils/backButtonManager';
 
 export type SubmenuId = 
   | 'voice_alert' 
@@ -70,6 +71,7 @@ interface SettingsScreenProps {
   setAppLanguage: (lang: AppLanguage) => void;
   appTheme?: AppThemeId;
   setAppTheme?: (theme: AppThemeId) => void;
+  onBack?: () => void;
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
@@ -82,10 +84,21 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   setAppLanguage,
   appTheme = 'midnight',
   setAppTheme,
+  onBack,
 }) => {
   const [activeSubmenu, setActiveSubmenu] = useState<SubmenuId | null>(null);
   const [langSearch, setLangSearch] = useState('');
   const [previewingLang, setPreviewingLang] = useState<LanguageCode | null>(null);
+
+  // Mobile Back Button: if inside any Settings submenu, back button returns to main settings hub
+  React.useEffect(() => {
+    if (activeSubmenu !== null) {
+      return pushBackHandler(() => {
+        setActiveSubmenu(null);
+        return true;
+      });
+    }
+  }, [activeSubmenu]);
 
   // Store Profile editing
   const [storeName, setStoreName] = useState(merchant.businessName);
